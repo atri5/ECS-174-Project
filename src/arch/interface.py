@@ -14,15 +14,58 @@ import numpy as np
 import pandas as pd
 
 # built-in modules
-## none for now..
+from abc import ABCMeta, abstractmethod
+from typing import Any
 
 # internal modules
 ## none for now...
 
 
+# --- Helper Functions --- #
+def load_hyperparams(mod_params: dict[str, Any]) -> dict[str, Any]:
+    """Modifies the default params with any overridden fields.
+
+    Args:
+        mod_params (dict[str, Any]): fields to override.
+
+    Returns:
+        dict[str, Any]: complete hyperparameter set.
+    """
+    
+    # default hyperparams
+    defaults = {
+        "nlayers": 4,
+        "activation": nn.GELU()
+    }
+    
+    # replace any of the defaults
+    for mod_param, mod_value in mod_params.items():
+        if mod_param not in defaults:
+            print(f"<WARNING> adding non-default {mod_param=} w/ {mod_value=}")
+        defaults[mod_param] = mod_value
+    
+    # export the completed hyperparams
+    return defaults
+
+
 # --- Interface --- #
-class CVModel(nn.Module):
-    pass
-
-
+class CVModel(ABCMeta):
+    # methods we expect to be overridden
+    @abstractmethod
+    def train(loader: torch.utils.data.DataLoader,
+              optimizer: torch.optim.Optimizer, loss_fn: torch.nn.Loss,
+              **kwargs):
+        pass
+    
+    @abstractmethod
+    def validate(loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs):
+        pass
+    
+    @abstractmethod
+    def test(loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs) -> torch.Tensor:
+        pass
+    
+    @abstractmethod
+    def predict(loader: torch.utils.data.DataLoader, **kwargs) -> torch.Tensor:
+        pass
 
