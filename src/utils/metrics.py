@@ -11,11 +11,11 @@ Functions to Implement:
 
 #imports
 import json
-from sklearn.metrics import log_loss, roc_auc_score, roc_curve, confusion_matrix
+from sklearn.metrics import log_loss, roc_auc_score, roc_curve, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
+import pandas as pd
+import numpy as np
 
 
-def weighted_log_loss(y_true, y_pred, sample_weights=None): 
-    return log_loss(y_true, y_pred, sample_weight=sample_weights)
 
 def compute_confusion_matrix(y_true, y_pred, normalize=False):
     cm = confusion_matrix(y_true, y_pred)
@@ -23,8 +23,21 @@ def compute_confusion_matrix(y_true, y_pred, normalize=False):
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
     return cm
 
-def save_metrics(metrics, filename):
+def tab_classification_metrics(y_true, y_pred, average='macro', class_names=None):
+    accuracy = accuracy_score(y_true, y_pred)
+    precision = precision_score(y_true, y_pred, average=average, zero_division=0)
+    recall = recall_score(y_true, y_pred, average=average, zero_division=0)
+    f1 = f1_score(y_true, y_pred, average=average, zero_division=0)
 
+    overall_metrics = {
+        "Metric": ["Accuracy", "Precision", "Recall", "F1-Score"],
+        "Value": [accuracy, precision, recall, f1]
+    }
+    overall_df = pd.DataFrame(overall_metrics)
+    return overall_df
+
+
+def save_metrics(metrics, filename):
     with open(filename, 'w') as f:
         json.dump(metrics, f)
 
