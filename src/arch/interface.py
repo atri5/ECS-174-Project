@@ -21,6 +21,12 @@ from typing import Any
 ## none for now...
 
 
+# --- Constants --- #
+NUM_INPUT_CHANNELS = 3
+NUM_OUTPUT_CLASSES = 3
+DEVICE = "cuda" if torch.cuda.is_available else "cpu"
+
+
 # --- Helper Functions --- #
 def load_hyperparams(mod_params: dict[str, Any]) -> dict[str, Any]:
     """Modifies the default params with any overridden fields.
