@@ -1,11 +1,6 @@
 '''
-Functions to Implement:
-
-1) weighted log loss
-2) confusion matrix computation
-3) Pretty Accuracy, Precision, Recall, F1
-4) Per-Class Metrics
-5) Save-Load Metrics
+@brief helper functions to accumulate and describe metrics throughout the processing stage. 
+@author Ayush Tripathi (atripathi7783@gmail.com)
 
 '''
 

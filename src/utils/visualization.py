@@ -1,10 +1,6 @@
 '''
-Functions to Create:
-
-1) Loss Visualization over x Epochs 
-2) tabulation of data provided for exporting
-3) Log metrics
-
+@brief visualization metrics for use throughout processing stage.
+@author Ayush Tripathi (atripathi7783@gmail.com)
 
 '''
 
