@@ -16,6 +16,7 @@ import pandas as pd
 # built-in modules
 from abc import ABCMeta, abstractmethod
 from typing import Any
+from pathlib import Path
 
 # internal modules
 ## none for now...
@@ -73,5 +74,9 @@ class CVModel(ABCMeta):
     
     @abstractmethod
     def predict(loader: torch.utils.data.DataLoader, **kwargs) -> torch.Tensor:
+        pass
+    
+    @abstractmethod
+    def save(path: Path | str, **kwargs) -> torch.Tensor:
         pass
 
