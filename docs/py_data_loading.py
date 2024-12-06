@@ -1,21 +1,33 @@
+import os
+import time
+import pydicom
+from tqdm import tqdm
+import pandas as pd
+from PIL import Image
+import numpy as np
+from torch.utils.data import Dataset
 import torch
 from torch.utils.data import Dataset, DataLoader
-from PIL import Image
-import pydicom
-import pandas as pd
-import os
 from torchvision import transforms
-import numpy as np
+import logging
+
+# Set up logger
+logging.basicConfig(filename='data_loading_errors.log', level=logging.ERROR, 
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger()
 
 class LumbarSpineDataset(Dataset):
-    def __init__(self, image_dir, metadata_dir, transform=None):
+    def __init__(self, image_dir, metadata_dir, transform=None, load_fraction=1):
         """
         Args:
             image_dir (string): Directory with images organized by study_id, series_id.
             metadata_dir (string): Directory containing the CSV files.
             transform (callable, optional): Optional transform to be applied on a sample.
+            load_fraction (float, optional): Fraction of data to load for debugging (default 1).
         """
         self.image_dir = image_dir
+        self.transform = transform
+        self.load_fraction = load_fraction
         
         # Load the coordinates and severity data from CSV files
         self.coordinates = pd.read_csv(os.path.join(metadata_dir, 'train_label_coordinates.csv'))
@@ -28,7 +40,6 @@ class LumbarSpineDataset(Dataset):
             'Severe': 2
         }
 
-        # Create a mapping of severity levels for each condition level (e.g., L1/L2, L2/L3, etc.)
         self.severity_columns = [
             'spinal_canal_stenosis_l1_l2', 'spinal_canal_stenosis_l2_l3', 'spinal_canal_stenosis_l3_l4', 
             'spinal_canal_stenosis_l4_l5', 'spinal_canal_stenosis_l5_s1',
@@ -42,46 +53,40 @@ class LumbarSpineDataset(Dataset):
             'right_subarticular_stenosis_l4_l5', 'right_subarticular_stenosis_l5_s1'
         ]
 
-        # Transpose severity levels to correspond to each condition level
         self.severity_levels = ['L1/L2', 'L2/L3', 'L3/L4', 'L4/L5', 'L5/S1']
-        self.transform = transform
-
-        # Cache to store images to avoid redundant loading
-        self.image_cache = {}
-
-        # Merge severity information for each level with coordinates
-        self.data = self.merge_severity_with_coordinates()
+        
+        # Load only a fraction of the data for debugging
+        self.data = self.load_data()
 
     def __len__(self):
         return len(self.data)
 
-    def merge_severity_with_coordinates(self):
+    def load_data(self):
         data = []
-        # Iterate through each study and series_id in the coordinates dataframe
-        for _, row in self.coordinates.iterrows():
+        start_time = time.perf_counter()
+
+        # Calculate the number of items to load based on the load_fraction
+        num_items = int(len(self.coordinates) * self.load_fraction)
+
+        for idx, row in tqdm(self.coordinates.iterrows(), total=num_items, desc="Loading images"):
+            if len(data) >= num_items:
+                break
+
             study_id = row['study_id']
             series_id = row['series_id']
             instance_number = row['instance_number']
-            condition_level = row['level']  # e.g., L1/L2, L2/L3, etc.
+            condition_level = row['level']
 
-            # Extract corresponding severity for the condition level from metadata
             severity = self.get_severity_for_level(study_id, condition_level)
             
-            # Check if the image is already cached
             img_path = os.path.join(self.image_dir, f"{study_id}/{series_id}/{instance_number}.dcm")
-            if instance_number in self.image_cache:
-                image = self.image_cache[instance_number]
-            else:
-                dicom_image = pydicom.dcmread(img_path)
-                image = dicom_image.pixel_array
-                image = image.astype(np.float32) / np.max(image)  # Normalize image
-                image = Image.fromarray(image)
 
-                # Cache the image for future use
-                self.image_cache[instance_number] = image
+            dicom_image = pydicom.dcmread(img_path)
+            image = dicom_image.pixel_array
+            image = image.astype(np.float32) / np.max(image)
+            image = Image.fromarray(image)
 
-            # Prepare the sample dictionary
-            coordinates = (row['x'], row['y'])  # Coordinates for the condition level
+            coordinates = (row['x'], row['y'])
             sample = {
                 'image': image,
                 'severity': severity,
@@ -89,39 +94,40 @@ class LumbarSpineDataset(Dataset):
             }
             data.append(sample)
 
+        end_time = time.perf_counter()
+        print(f"Time taken to load data: {end_time - start_time:.2f} seconds")
         return data
 
     def get_severity_for_level(self, study_id, level):
-        """
-        Get the severity condition for a specific level (e.g., L1/L2, L2/L3) for the given study_id.
-        """
-        # Find the relevant severity columns for this level
         severity_column = self.severity_columns[self.severity_levels.index(level)]
-        # Find the corresponding severity value for this level
         severity_row = self.metadata[self.metadata['study_id'] == study_id]
         
         if not severity_row.empty:
             severity_value = severity_row[severity_column].values[0]
-            return self.severity_mapping.get(severity_value, -1)  # Return the mapped severity value
-        return -1  # Return -1 if no severity found for the given study_id
+            return self.severity_mapping.get(severity_value, -1)
+        return -1
 
     def __getitem__(self, idx):
         sample = self.data[idx]
+        image = sample['image']
+        image = self.transform(image)
         
-        # Apply transformations if any
-        if self.transform:
-            sample['image'] = self.transform(sample['image'])
-        
+        sample['image'] = image
         return sample
 
-
+# Set a manual seed for reproduction
+manual_seed = 110
+torch.manual_seed(manual_seed)
+print(f"manual seed: {manual_seed}")
+# Initialize the dataset
 image_dir = r"Project\train_images"
 metadata_dir = r"Project"
-transform = transforms.Compose([
+transform = transforms.Compose([ 
     transforms.Resize((224,224)),
-    transforms.ToTensor(), 
+    transforms.ToTensor(),
     transforms.Normalize((0.5), (0.5))])
-dataset = LumbarSpineDataset(image_dir=image_dir, metadata_dir=metadata_dir, transform=transform)
 
-# Create DataLoader
-dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
+dataset = LumbarSpineDataset(image_dir=image_dir, metadata_dir=metadata_dir, transform=transform, load_fraction=1)
+
+# Create DataLoader with tqdm for progress bar
+dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
