@@ -56,7 +56,7 @@ def load_hyperparams(mod_params: dict[str, Any]) -> dict[str, Any]:
 
 
 # --- Interface --- #
-class CVModel(ABCMeta):
+class CVModel(metaclass = ABCMeta):
     # methods we expect to be overridden
     @abstractmethod
     def train(loader: torch.utils.data.DataLoader,
@@ -82,6 +82,6 @@ class CVModel(ABCMeta):
         pass
     
     @abstractmethod
-    def interpret_model(test_input: nn.Data, **kwargs) -> None:
+    def interpret_model(test_input: Any, **kwargs) -> None:
         pass
 
