@@ -21,11 +21,11 @@ from interface import *
 
 
 # --- Model --- #
-class CNN(nn.Module, CVModel):
+class MCNN(nn.Module, CVModel):
     # build model
     def __init__(self, **kwargs):
         # build up parents
-        super(CNN, self).__init__()
+        super(MCNN, self).__init__()
         
         # convolution & pooling layers
         self.conv = nn.ModuleList([
@@ -33,10 +33,15 @@ class CNN(nn.Module, CVModel):
             nn.Conv2d(8, 16, 7),
             nn.Conv2d(16, 32, 7)
         ])
+        self.conv_norm = nn.ModuleList([
+            nn.LayerNorm([8, *IMAGE_DIMS]),
+            nn.LayerNorm([16, *IMAGE_DIMS]),
+            nn.LayerNorm([32, *IMAGE_DIMS]),
+        ])
         self.pool = nn.MaxPool2d(2, 2)
         
         # activation fn
-        self.conv_act = nn.RELU()
+        self.conv_act = nn.GELU()
         self.fc_act = nn.ReLU()
         
         # classifier fn
@@ -48,18 +53,27 @@ class CNN(nn.Module, CVModel):
             nn.Linear(256, 64),
             nn.Linear(64, NUM_OUTPUT_CLASSES),
         ])
+        self.fc_norm = nn.ModuleList([
+            nn.LayerNorm(256),
+            nn.LayerNorm(64)
+        ])
 
     def forward(self, x):
         # run through the convolutions & pools
         for i in range(len(self.conv)):
-            x = self.pool(self.conv_act(self.conv[i](x)))
+            # convolve and normalize
+            x = self.conv_norm[i](self.conv[i](x))
+            
+            # activate and pool
+            x = self.pool(self.conv_act(x))
         
         # reshape
         x = x.view(-1, 32 * 7 * 7)
         
-        # linear classification
+        # linear classification & normalization
         for i in range(len(self.fc) - 1):
-            x = self.fc_act(self.fc[i](x))
+            x = self.fc_norm[i](self.fc[i](x))
+            x = self.fc_act(x)
         x = self.fc[-1](x)
         
         # export forward pass
