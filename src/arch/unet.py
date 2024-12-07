@@ -15,7 +15,7 @@ import torch.functional as F
 from typing import Any
 
 # internal modules
-from interface import *
+from src.arch.interface import *
 
 
 # --- Constants --- #

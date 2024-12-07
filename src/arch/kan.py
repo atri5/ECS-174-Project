@@ -18,7 +18,7 @@ from deepkan import SplineLinearLayer
 ## none for now...
 
 # internal modules
-from interface import *
+from src.arch.interface import *
 
 
 # --- Model --- #
