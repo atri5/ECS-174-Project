@@ -1,6 +1,6 @@
 """
-@brief Interface for the model architectures; all models used should follow the 
-    same structure to ensure compatability.
+@brief Implemented modified CNN with different activations, layer normalization,
+    and more.
 @author Arjun Ashok (arjun3.ashok@gmail.com)
 """
 
@@ -36,7 +36,7 @@ class MCNN(nn.Module, CVModel):
         self.conv_norm = nn.ModuleList([
             nn.LayerNorm([8, *IMAGE_DIMS]),
             nn.LayerNorm([16, *IMAGE_DIMS]),
-            nn.LayerNorm([32, *IMAGE_DIMS]),
+            nn.LayerNorm([32, *IMAGE_DIMS])
         ])
         self.pool = nn.MaxPool2d(2, 2)
         
@@ -51,7 +51,7 @@ class MCNN(nn.Module, CVModel):
         self.fc = nn.ModuleList([
             nn.Linear(32 * 7 * 7, 256),
             nn.Linear(256, 64),
-            nn.Linear(64, NUM_OUTPUT_CLASSES),
+            nn.Linear(64, NUM_OUTPUT_CLASSES)
         ])
         self.fc_norm = nn.ModuleList([
             nn.LayerNorm(256),

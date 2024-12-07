@@ -25,7 +25,7 @@ from pathlib import Path
 # --- Constants --- #
 NUM_INPUT_CHANNELS = 3
 NUM_OUTPUT_CLASSES = 3
-IMAGE_DIMS = (512, 512)
+IMAGE_DIMS = (224, 224)
 DEVICE = "cuda" if torch.cuda.is_available else "cpu"
 
 
@@ -79,5 +79,9 @@ class CVModel(ABCMeta):
     
     @abstractmethod
     def save(path: Path | str, **kwargs) -> None:
+        pass
+    
+    @abstractmethod
+    def interpret_model(test_input: nn.Data, **kwargs) -> None:
         pass
 

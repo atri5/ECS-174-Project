@@ -1,15 +1,16 @@
 import os
 import time
 import pydicom
-from tqdm import tqdm
 import pandas as pd
-from PIL import Image
 import numpy as np
-from torch.utils.data import Dataset
 import torch
+import logging
+from tqdm import tqdm
+from PIL import Image
+from pathlib import Path
+from torch.utils.data import Dataset
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
-import logging
 
 # Set up logger
 logging.basicConfig(filename='data_loading_errors.log', level=logging.ERROR, 
@@ -115,19 +116,22 @@ class LumbarSpineDataset(Dataset):
         sample['image'] = image
         return sample
 
-# Set a manual seed for reproduction
-manual_seed = 110
-torch.manual_seed(manual_seed)
-print(f"manual seed: {manual_seed}")
-# Initialize the dataset
-image_dir = r"Project\train_images"
-metadata_dir = r"Project"
+# Scripting + global vars
 transform = transforms.Compose([ 
     transforms.Resize((224,224)),
     transforms.ToTensor(),
-    transforms.Normalize((0.5), (0.5))])
+    transforms.Normalize((0.5), (0.5))
+])
 
-dataset = LumbarSpineDataset(image_dir=image_dir, metadata_dir=metadata_dir, transform=transform, load_fraction=1)
+if __name__ == "__main__":
+    manual_seed = 17
+    torch.manual_seed(manual_seed)
+    print(f"manual seed: {manual_seed}")
+    # Initialize the dataset
+    image_dir = Path().cwd() / "data" / "train_images"
+    metadata_dir = Path().cwd() / "data"
 
-# Create DataLoader with tqdm for progress bar
-dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+    dataset = LumbarSpineDataset(image_dir=image_dir, metadata_dir=metadata_dir, transform=transform, load_fraction=1)
+
+    # Create DataLoader with tqdm for progress bar
+    dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
