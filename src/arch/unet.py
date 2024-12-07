@@ -26,7 +26,7 @@ DEVICE = "cuda" if torch.cuda.is_available else "cpu"
 # --- Double Convolution --- #
 class DoubleConv(nn.Module):
     def __init__(self, in_channels, out_channels):
-        super(DoubleConv, self).init()
+        super(DoubleConv, self).__init__()
         self.conv = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, 3, 1, 1, bias = False), #5th parameter has image padding for simplicity, will change later
             nn.BatchNorm2d(out_channels),
@@ -61,7 +61,7 @@ class UNet(nn.Module, CVModel):
         
         #U-Net Up portion
         for feature in reversed(features):
-            nn.ConvTranspose2d(feature*2, feature, kernel_size=2, stride=2 ) #double feature size for skip connections on each up layer
+            self.ups.append(nn.ConvTranspose2d(feature*2, feature, kernel_size=2, stride=2 )) #double feature size for skip connections on each up layer
             self.ups.append(DoubleConv(feature*2, feature))
         
         #U-Net bottleneck layer
@@ -86,13 +86,32 @@ class UNet(nn.Module, CVModel):
 
             #if the x dim are different than skip dims before concatenation, pad and resize
             if(x.shape != skip_connection.shape):
-                x = tf.resize(x, size =skip_connection.shape[2:] )
- 
+                #for PIL images, use:
+                #x = tf.resize(x, size =skip_connection.shape[2:] )
+                #for tensors, use:
+                x = torch.nn.functional.interpolate(x, size=skip_connection.shape[2:], mode="bilinear", align_corners=True)
+                
             concat_skip = torch.cat((skip_connection, x), dim = 1) #along channel dimension 
             x = self.ups[i + 1](concat_skip)
 
         return self.final_conv(x)
+    
+        # function override
+    def train(self, loader: torch.utils.data.DataLoader,
+              optimizer: torch.optim.Optimizer, loss_fn: torch.nn.CrossEntropyLoss,
+              **kwargs):
+        pass
+    def validate(self, loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs):
+        pass
+    
+    def test(self, loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs):
+        pass
 
+    def predict(self, loader: torch.utils.data.DataLoader, **kwargs):
+        pass
+
+    def save(self, path: Path | str, **kwargs) -> torch.Tensor:
+        pass
 
 def test():
     x = torch.randn((3, 1, 160, 160))
@@ -107,19 +126,7 @@ if __name__ == "__main__":
     
 
 
-    # function override
-    def train(loader: torch.utils.data.DataLoader,
-              optimizer: torch.optim.Optimizer, loss_fn: torch.nn.Loss,
-              **kwargs):
-        pass
-    def validate(loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs):
-        pass
-    
-    def test(loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs):
-        pass
 
-    def predict(loader: torch.utils.data.DataLoader, **kwargs):
-        pass    
 
 
 '''# --- Interface --- #
