@@ -60,7 +60,8 @@ class CVModel(ABCMeta):
     # methods we expect to be overridden
     @abstractmethod
     def train(loader: torch.utils.data.DataLoader,
-              optimizer: torch.optim.Optimizer, loss_fn: torch.nn.Loss,
+              optimizer: torch.optim.Optimizer,
+              loss_fn: torch.nn.CrossEntropyLoss,
               **kwargs):
         pass
     
