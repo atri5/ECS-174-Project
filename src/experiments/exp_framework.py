@@ -1,6 +1,7 @@
 '''
 @brief: Testing framework for all models
 @author: Ayush Tripathi(atripathi7783@gmail.com)
+
 '''
 
 #imports
@@ -27,11 +28,16 @@ from src.arch.mcnn import *
 from src.arch.kan import *
 
 
-'''
-Goal: Load and store dataloader as an object for use throughout future models. 
-'''
 
-class test_framework():
+def load_model(self, input_channels = 1, output_classes = 3, ):
+    model = UNet(NUM_INPUT_CHANNELS, NUM_OUTPUT_CLASSES)
+    return model
+
+class TestFramework:
+
+    def __init__(self, model, device = "cpu"):
+        self.model = model
+        self.device = device
 
     def init_dataloader(self, image_dir = "", metadata_dir = "", batch_size = 32, manual_seed = 110):
         
@@ -53,7 +59,12 @@ class test_framework():
         dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
         return dataloader
     
-    def load_model(self, input_channels = 1, output_classes = 3, ):
-        model = UNet(NUM_INPUT_CHANNELS, NUM_OUTPUT_CLASSES)
-        return model
+
+    
+    def train_model(self):
+        pass
+    def test_model(self):
+        pass
+    def save_model(self):
+        pass
     
