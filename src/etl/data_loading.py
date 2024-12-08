@@ -12,11 +12,6 @@ from torch.utils.data import Dataset
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 
-# Set up logger
-logging.basicConfig(filename='data_loading_errors.log', level=logging.ERROR, 
-                    format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger()
-
 class LumbarSpineDataset(Dataset):
     def __init__(self, image_dir, metadata_dir, transform=None, load_fraction=1):
         """
