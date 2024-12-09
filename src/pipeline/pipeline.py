@@ -77,6 +77,8 @@ class Pipeline(object):
         
         # saving
         self.model.save(path=self.model_descr)
+        
+        return train_metrics
 
 
 # Testing
