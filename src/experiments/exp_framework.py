@@ -85,4 +85,10 @@ if __name__ == "__main__":
     data_dir = Path().cwd() / "src" / "dataset" / "rsna-2024-lumbar-spine-degenerative-classification"
     img_dir = data_dir / "train_images"
     
-    # 
+    # initialize model
+    hp = load_hyperparams()
+    model = CNN(hp)
+    
+    # pipeline
+    pipe = Pipeline(model=model, model_descr="baseline_CNN")
+    
