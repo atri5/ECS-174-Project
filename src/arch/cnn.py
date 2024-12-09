@@ -114,11 +114,13 @@ class CNN(nn.Module, CVModel):
         # wrap the forward pass w/ softmax
         return self.class_fn(self.forward(x))
     
-    def save(path: Path | str, **kwargs) -> None:
+    def save(self, path: Path | str, **kwargs) -> None:
         """Saves the model to a specified weights directory for easy caching.
 
         Args:
             path (Path | str): path to save to, relative or absolute.
         """
-        pass
+        
+        # wraps saver method
+        saver(self.hyperparams, self, path)
 
