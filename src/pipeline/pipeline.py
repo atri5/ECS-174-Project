@@ -90,15 +90,16 @@ class Pipeline(object):
         test_metrics = self.model.test(
             self.test_loader
         )
-        
 
+        # plotting loss and accuracy on each epoch
 
-        # plotting
-        ## plotting loss on each epoch 
+        ## for training metrics
         plot_train_metrics(train_metrics, self.model_descr)
         
-        
-        # TODO @ayush
+        ## for test metrics
+        print(f'Accuracy: {test_metrics["acc"]} %, Loss: {test_metrics["loss"]}')       
+
+
         
         # saving
         self.model.save(path=self.model_descr)
