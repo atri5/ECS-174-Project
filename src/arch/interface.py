@@ -281,15 +281,15 @@ class CVModel(metaclass = ABCMeta):
     # methods we expect to be overridden
     @abstractmethod
     def train(self, train_loader: torch.utils.data.DataLoader,
-              val_loader: torch.utils.data.DataLoader, **kwargs):
+              val_loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
         pass
     
     @abstractmethod
-    def validate(loader: torch.utils.data.DataLoader, **kwargs):
+    def validate(loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
         pass
     
     @abstractmethod
-    def test(loader: torch.utils.data.DataLoader, **kwargs) -> torch.Tensor:
+    def test(loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
         pass
     
     @abstractmethod
@@ -305,6 +305,6 @@ class CVModel(metaclass = ABCMeta):
         pass
     
     @abstractmethod
-    def interpret_model(test_input: Any, **kwargs) -> None:
+    def interpret_model(test_input: Any, **kwargs) -> Any:
         pass
 
