@@ -49,28 +49,33 @@ class DoubleConv(nn.Module):
 # --- Model --- #
 class UNet(nn.Module, CVModel):
     #building model
-    def __init__(self, in_channels = NUM_INPUT_CHANNELS, out_channels = NUM_OUTPUT_CLASSES, features = [64,128,256,512]):
+    def __init__(self, hyperparams, **kwargs):
         super(UNet, self).__init__()
+
         
-        #for model.eval for batch layers
+        self.features = [64,128,256,512]
+        
+        #set up model from hyperparam list
+        self.hyperparams = hyperparams
         self.ups  = nn.ModuleList()    
         self.downs = nn.ModuleList()
         self.pool = nn.MaxPool2d(kernel_size=2, stride = 2)
-
+        in_channels = NUM_INPUT_CHANNELS
+        out_channels = NUM_OUTPUT_CLASSES
 
         #U-Net down portion
-        for feature in features:
+        for feature in self.features:
             self.downs.append(DoubleConv(in_channels, feature))
             in_channels = feature
         
         #U-Net Up portion
-        for feature in reversed(features):
+        for feature in reversed(self.features):
             self.ups.append(nn.ConvTranspose2d(feature*2, feature, kernel_size=2, stride=2 )) #double feature size for skip connections on each up layer
             self.ups.append(DoubleConv(feature*2, feature))
         
         #U-Net bottleneck layer
-        self.bottleneck = DoubleConv(features[-1], features[-1] * 2)
-        self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
+        self.bottleneck = DoubleConv(self.features[-1], self.features[-1] * 2)
+        self.final_conv = nn.Conv2d(self.features[0], out_channels, kernel_size=1)
 
     def forward(self,x):
         skip_connections = []
@@ -101,40 +106,13 @@ class UNet(nn.Module, CVModel):
         return self.final_conv(x)
     
         # function override
-    def train(self, loader: torch.utils.data.DataLoader,
-              optimizer: torch.optim.Optimizer, loss_fn: torch.nn.CrossEntropyLoss,
-              scaler = torch.amp.GradScaler, batch_size = 32,
-              **kwargs):
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.to(device)
-        
-        
 
-        loop = tqdm.tqdm(loader)
-        for batch_idx, sample in enumerate(loop):
-            data = sample['image'].to(device=device)
-            targets = sample['severity'].float().to(device = device)
-            # targets = targets.squeeze(1).to(device = device)
-            print(targets.shape)
-            #forward
-            with torch.amp.autocast('cuda', dtype = torch.float16):
-                predictions = self(data)
-                loss = loss_fn(predictions, targets)
-                print("Predictions shape:", predictions.shape)  # Should be [N, C, H, W]
-                print("Targets shape:", targets.shape)   
-
-            #backward
-            optimizer.zero_grad()
-            scaler.scale(loss).backward()
-            scaler.step(optimizer)
-            scaler.update()
-
-            #update tqdm
-            loop.set_postfix(loss = loss.item())
-
+    def train(self, train_loader: torch.utils.data.DataLoader,
+              val_loader: torch.utils.data.DataLoader, **kwargs):
+        trainer(self.hyperparams, self, train_loader, val_loader)
                 
-    def validate(self, loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs):
-        pass
+    def validate(self, loader: torch.utils.data.DataLoader):
+        validation(self.hyperparams, self, loader )
     
     def test(self, loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs):
         pass
@@ -145,12 +123,23 @@ class UNet(nn.Module, CVModel):
     def save(self, path: Path | str, **kwargs) -> torch.Tensor:
         pass
 
+    def load(path: Path | str, model_class, **kwargs) -> None:
+        pass    
     def interpret_model(test_input, **kwargs):
         return super().interpret_model(**kwargs)
 
 def test():
+    defaults = {
+        "nearly_stop": 5,   # 10 epochs before early stopping
+        "nepochs": 30,  # 30 epochs to train
+        "batch_size": 32,  # 32 images per batch
+        "lr": 0.0001,   # learning rate
+        "optimizer": optim.Adam,    # optimizer to use
+        "loss_fn": nn.CrossEntropyLoss, # loss fn to use
+        "class_fn": nn.Softmax  # function to operate on the final outputs
+    }
     x = torch.randn((3, 1, 160, 160))
-    model = UNet(in_channels = 1, out_channels= 1)
+    model = UNet(defaults)
     preds = model(x)
     print(preds.shape, x.shape)
 
