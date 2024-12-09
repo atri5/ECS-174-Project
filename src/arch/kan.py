@@ -24,9 +24,10 @@ from src.arch.interface import *
 # --- Model --- #
 class CKAN(nn.Module, CVModel):
     # build model
-    def __init__(self, **kwargs):
+    def __init__(self,hyperparams, **kwargs):
         # build up parents
         super(CKAN, self).__init__()
+        self.hyperparams = hyperparams
         
         # convolution & pooling layers
         self.conv = nn.ModuleList([
@@ -81,21 +82,27 @@ class CKAN(nn.Module, CVModel):
         return x
     
     # override methods
-    def train(self, loader: torch.utils.data.DataLoader,
-              optimizer: torch.optim.Optimizer, loss_fn: torch.nn.Loss,
-              **kwargs):
-        """Trains the CNN.
+    def train(self, train_loader: torch.utils.data.DataLoader,
+              val_loader: torch.utils.data.DataLoader, **kwargs):
+        """Wraps the trainer method for the Conv KAN training.
 
         Args:
-            loader (torch.utils.data.DataLoader): _description_
-            optimizer (torch.optim.Optimizer): _description_
-            loss_fn (torch.nn.Loss): _description_
+            train_loader (torch.utils.data.DataLoader): dataloader for train set
+            val_loader (torch.utils.data.DataLoader): dataloader for val set
         """
         
-        pass
+        # wrap trainer call
+        trainer(self.hyperparams, self, train_loader, val_loader)
     
-    def validate(self, loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs):
-        pass
+    def validate(self, loader: torch.utils.data.DataLoader) -> dict[str, Any]:
+        """Validation on the Conv KAN.
+
+        Args:
+            loader (torch.utils.data.DataLoader): loader for the validation set
+        """
+        
+        # wrap validator call
+        validation(self.hyperparams, self, loader)
     
     def test(self, loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs) -> torch.Tensor:
         pass

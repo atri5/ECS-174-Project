@@ -11,7 +11,6 @@ import torch
 import torch.nn as nn
 import torch.functional as F
 import torch.optim as optim
-import numpy as np
 
 # built-in modules
 ## none for now...
@@ -23,9 +22,10 @@ from src.arch.interface import *
 # --- Model --- #
 class MCNN(nn.Module, CVModel):
     # build model
-    def __init__(self, **kwargs):
+    def __init__(self, hyperparams, **kwargs):
         # build up parents
         super(MCNN, self).__init__()
+        self.hyperparams = hyperparams
         
         # convolution & pooling layers
         self.conv = nn.ModuleList([
