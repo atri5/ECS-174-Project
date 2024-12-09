@@ -28,6 +28,8 @@ NUM_INPUT_CHANNELS = 3
 NUM_OUTPUT_CLASSES = 3
 IMAGE_DIMS = (224, 224)
 DEVICE = "cuda" if torch.cuda.is_available else "mps"
+RAND_SEED = 17
+TTV_SPLIT = (0.7, 0.1, 0.2)
 
 
 # --- Helper Functions --- #
