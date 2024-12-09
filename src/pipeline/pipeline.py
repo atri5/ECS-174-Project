@@ -22,7 +22,7 @@ from src.arch.kan import *
 
 
 # Helper Methods
-def load_model(self, input_channels = 1, output_classes = 3, ):
+def load_model(self, input_channels = 1, output_classes = 3):
     model = UNet(NUM_INPUT_CHANNELS, NUM_OUTPUT_CLASSES)
     return model
 
@@ -91,4 +91,7 @@ if __name__ == "__main__":
     
     # pipeline
     pipe = Pipeline(model=model, model_descr="baseline_CNN")
+    pipe.init_dataloader()
+    pipe.split_loader()
+    pipe.run_pipeline()
     
