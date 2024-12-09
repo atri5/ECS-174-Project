@@ -1,6 +1,7 @@
 """
 @brief U-Net architecture and double convolution class 
 @author Ayush Tripathi (atripathi7783@gmail.com)
+
 """
 
 
@@ -10,16 +11,19 @@ import torch
 import torch.nn as nn
 import torchvision.transforms.functional as tf
 import torch.functional as F
+import sys, os #for testing
+import tqdm #progress bar
 
 # built-in modules
 from typing import Any
 
 # internal modules
+# from interface import *
 from src.arch.interface import *
 
 
 # --- Constants --- #
-NUM_INPUT_CHANNELS = 3
+NUM_INPUT_CHANNELS = 1
 NUM_OUTPUT_CLASSES = 3
 DEVICE = "cuda" if torch.cuda.is_available else "cpu"
 
@@ -99,8 +103,36 @@ class UNet(nn.Module, CVModel):
         # function override
     def train(self, loader: torch.utils.data.DataLoader,
               optimizer: torch.optim.Optimizer, loss_fn: torch.nn.CrossEntropyLoss,
+              scaler = torch.amp.GradScaler, batch_size = 32,
               **kwargs):
-        pass
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.to(device)
+        
+        
+
+        loop = tqdm.tqdm(loader)
+        for batch_idx, sample in enumerate(loop):
+            data = sample['image'].to(device=device)
+            targets = sample['severity'].float().to(device = device)
+            # targets = targets.squeeze(1).to(device = device)
+            print(targets.shape)
+            #forward
+            with torch.amp.autocast('cuda', dtype = torch.float16):
+                predictions = self(data)
+                loss = loss_fn(predictions, targets)
+                print("Predictions shape:", predictions.shape)  # Should be [N, C, H, W]
+                print("Targets shape:", targets.shape)   
+
+            #backward
+            optimizer.zero_grad()
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+
+            #update tqdm
+            loop.set_postfix(loss = loss.item())
+
+                
     def validate(self, loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs):
         pass
     
@@ -113,6 +145,9 @@ class UNet(nn.Module, CVModel):
     def save(self, path: Path | str, **kwargs) -> torch.Tensor:
         pass
 
+    def interpret_model(test_input, **kwargs):
+        return super().interpret_model(**kwargs)
+
 def test():
     x = torch.randn((3, 1, 160, 160))
     model = UNet(in_channels = 1, out_channels= 1)
@@ -120,6 +155,10 @@ def test():
     print(preds.shape, x.shape)
 
 if __name__ == "__main__":
+    
+    project_root = Path(os.getcwd()).resolve().parents[1]
+    sys.path.append(str(project_root))
+    print(project_root) #should be base file
     test()
 
 
