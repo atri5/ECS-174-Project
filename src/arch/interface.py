@@ -53,12 +53,12 @@ def load_hyperparams(mod_params: dict[str, Any]=None) -> dict[str, Any]:
         "loss_fn": nn.CrossEntropyLoss, # loss fn to use
         "class_fn": nn.Softmax  # function to operate on the final outputs
     }
-    
-    # replace any of the defaults
-    for mod_param, mod_value in mod_params.items():
-        if mod_param not in defaults:
-            print(f"<WARNING> adding non-default {mod_param=} w/ {mod_value=}")
-        defaults[mod_param] = mod_value
+    if mod_params is not None:
+        # replace any of the defaults
+        for mod_param, mod_value in mod_params.items():
+            if mod_param not in defaults:
+                print(f"<WARNING> adding non-default {mod_param=} w/ {mod_value=}")
+            defaults[mod_param] = mod_value
     
     # export the completed hyperparams
     return defaults
