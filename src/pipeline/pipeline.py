@@ -19,6 +19,7 @@ from src.arch.unet import *
 from src.arch.cnn import *
 from src.arch.mcnn import *
 from src.arch.kan import *
+from utils.visualization import *
 
 
 # Helper Methods
@@ -63,6 +64,16 @@ class Pipeline(object):
         self.test_loader = None
         pass
     
+    """
+    Plot training and validation loss and accuracy.
+
+    Args:
+        metrics (dict): Dictionary containing train/val loss and accuracy.
+    """
+    epochs = range(1, len(metrics["train_loss"]) + 1)
+
+
+
     def run_pipeline(self) -> dict[str, Any]:
         """Wraps the full training pipeline.
 
@@ -83,6 +94,10 @@ class Pipeline(object):
 
 
         # plotting
+        ## plotting loss on each epoch 
+        plot_train_metrics(train_metrics, self.model_descr)
+        
+        
         # TODO @ayush
         
         # saving

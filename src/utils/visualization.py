@@ -5,7 +5,7 @@
 '''
 
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import pandas as pd
 import os
 import csv
@@ -81,3 +81,49 @@ def visualize_samples(dataset, class_names, samples_to_display=10):
         axes[i].axis('off')
     
     plt.show()
+
+
+def plot_train_metrics(metrics: dict, desc: str):
+    """
+    Plot training and validation loss and accuracy.
+
+    Args:
+        metrics (dict): Dictionary containing train/val loss and accuracy.
+        desc (str): Description of model for saving in figs directory.
+    """
+    #create the save directory
+    save_dir = "./src/experiments/figs"
+    os.makedirs(save_dir, exist_ok=True)
+
+
+    epochs = range(1, len(metrics["train_loss"]) + 1)
+    plt.figure(figsize=(8, 6))
+    plt.plot(epochs, metrics["train_loss"], label="Train Loss", marker='o')
+    plt.plot(epochs, metrics["val_loss"], label="Validation Loss", marker='o')
+    plt.title("Loss vs. Epochs")
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(f"{save_dir}/{desc}_train_loss.png", dpi=300)
+    plt.show()
+
+    plt.figure(figsize=(8, 6))
+    plt.plot(epochs, metrics["train_acc"], label="Train Accuracy", marker='o')
+    plt.plot(epochs, metrics["val_acc"], label="Validation Accuracy", marker='o')
+    plt.title("Accuracy vs. Epochs")
+    plt.xlabel("Epochs")
+    plt.ylabel("Accuracy")
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(f"{save_dir}/{desc}_train_accuracy.png", dpi=300)
+    plt.show()
+
+if __name__ == "__main__":
+    metrics = metrics = {
+    "train_loss": [0.8, 0.6, 0.4, 0.35],
+    "train_acc": [0.6, 0.75, 0.85, 0.9],
+    "val_loss": [0.9, 0.7, 0.5, 0.4],
+    "val_acc": [0.55, 0.7, 0.8, 0.85]
+    }
+    plot_train_metrics(metrics, "unet-model")
