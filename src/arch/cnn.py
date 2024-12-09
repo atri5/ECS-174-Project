@@ -88,8 +88,18 @@ class CNN(nn.Module, CVModel):
         # wrap validator call
         validation(self.hyperparams, self, loader)
     
-    def test(self, loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs) -> torch.Tensor:
-        pass
+    def test(self, loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
+        """Wrap the call to the tester function.
+
+        Args:
+            loader (torch.utils.data.DataLoader): test data loader
+
+        Returns:
+            dict[str, Any]: metrics
+        """
+        
+        # wrap tester call
+        return tester(self.hyperparams, self, loader)
     
     def predict(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
         """Predict wrapper method for generating the prediction we want.
