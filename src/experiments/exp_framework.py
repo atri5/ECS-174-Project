@@ -1,7 +1,7 @@
 '''
-@brief: Testing framework for all models
-@author: Ayush Tripathi(atripathi7783@gmail.com)
-
+@brief Testing framework for all models
+@author Arjun Ashok (arjun3.ashok@gmail.com),
+        Ayush Tripathi(atripathi7783@gmail.com)
 '''
 
 #imports
@@ -73,6 +73,7 @@ class Pipeline(object):
         )
         
         # plotting
+        # TODO @ayush
         
         # saving
         self.model.save(path=self.model_descr)
