@@ -36,7 +36,7 @@ class CNN(nn.Module, CVModel):
         self.pool = nn.MaxPool2d(2, 2)
         
         # activation fn
-        self.conv_act = nn.RELU()
+        self.conv_act = nn.ReLU()
         self.fc_act = nn.ReLU()
         
         # classifier fn
