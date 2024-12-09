@@ -124,3 +124,10 @@ class CNN(nn.Module, CVModel):
         # wraps saver method
         saver(self.hyperparams, self, path)
 
+    def load(path: Path | str, model_class, **kwargs) -> None:
+        pass
+    
+    def interpret_model(test_input: Any, **kwargs) -> None:
+        pass
+    
+    
