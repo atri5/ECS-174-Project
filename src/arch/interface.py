@@ -33,7 +33,7 @@ TTV_SPLIT = (0.7, 0.1, 0.2)
 
 
 # --- Helper Functions --- #
-def load_hyperparams(mod_params: dict[str, Any]) -> dict[str, Any]:
+def load_hyperparams(mod_params: dict[str, Any]=None) -> dict[str, Any]:
     """Modifies the default params with any overridden fields.
 
     Args:

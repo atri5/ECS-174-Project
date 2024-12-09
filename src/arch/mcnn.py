@@ -80,24 +80,40 @@ class MCNN(nn.Module, CVModel):
         return x
     
     # override methods
-    def train(self, loader: torch.utils.data.DataLoader,
-              optimizer: torch.optim.Optimizer, loss_fn: torch.nn.Loss,
-              **kwargs):
-        """Trains the CNN.
+    def train(self, train_loader: torch.utils.data.DataLoader,
+              val_loader: torch.utils.data.DataLoader, **kwargs):
+        """Wraps the trainer method for the MCNN training.
 
         Args:
-            loader (torch.utils.data.DataLoader): _description_
-            optimizer (torch.optim.Optimizer): _description_
-            loss_fn (torch.nn.Loss): _description_
+            train_loader (torch.utils.data.DataLoader): dataloader for train set
+            val_loader (torch.utils.data.DataLoader): dataloader for val set
         """
         
-        pass
+        # wrap trainer call
+        trainer(self.hyperparams, self, train_loader, val_loader)
     
-    def validate(self, loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs):
-        pass
+    def validate(self, loader: torch.utils.data.DataLoader) -> dict[str, Any]:
+        """Validation on the MCNN.
+
+        Args:
+            loader (torch.utils.data.DataLoader): loader for the validation set
+        """
+        
+        # wrap validator call
+        validation(self.hyperparams, self, loader)
     
-    def test(self, loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs) -> torch.Tensor:
-        pass
+    def test(self, loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
+        """Wrap the call to the tester function.
+
+        Args:
+            loader (torch.utils.data.DataLoader): test data loader
+
+        Returns:
+            dict[str, Any]: metrics
+        """
+        
+        # wrap tester call
+        return tester(self.hyperparams, self, loader)
     
     def predict(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
         """Predict wrapper method for generating the prediction we want.
@@ -112,11 +128,13 @@ class MCNN(nn.Module, CVModel):
         # wrap the forward pass w/ softmax
         return self.class_fn(self.forward(x))
     
-    def save(path: Path | str, **kwargs) -> None:
+    def save(self, path: Path | str, **kwargs) -> None:
         """Saves the model to a specified weights directory for easy caching.
 
         Args:
             path (Path | str): path to save to, relative or absolute.
         """
-        pass
+        
+        # wraps saver method
+        saver(self.hyperparams, self, path)
 
