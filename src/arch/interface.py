@@ -17,6 +17,7 @@ import numpy as np
 from abc import ABCMeta, abstractmethod
 from typing import Any
 from pathlib import Path
+from json import dump, load
 
 # internal modules
 ## none for now...
@@ -198,23 +199,77 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
         print("Finished Training!")
         return metrics
 
+def saver(hyperparams: dict[str, Any], model: nn.Module, path: Path | str) -> None:
+    """Saves the model state and hyperparams.
+
+    Args:
+        hyperparams (dict[str, Any]): hyperparams
+        model (nn.Module): model to save
+        path (Path | str): name of the model save; goes to default path
+    """
+    
+    # export dir
+    weight_export_dir = Path().cwd() / "model-weights"
+    hp_export_dir = Path().cwd() / "model-hyperparams"
+    
+    if not weight_export_dir.exists():
+        weight_export_dir.mkdir()
+    if not hp_export_dir.exists():
+        hp_export_dir.mkdir()
+    
+    # save the state dict
+    torch.save(model.state_dict(), weight_export_dir / path)
+
+    # save the hyperparams
+    with open(hp_export_dir / path, "w") as f:
+        dump(hyperparams, f, indent=4)
+
+    # conclude
+    print(f"Saved model to {weight_export_dir / path}, hyperparams to {hp_export_dir / path}")
+
+def loader(path: Path | str, model_class: Any) -> nn.Module:
+    """Loads a model.
+
+    Args:
+        path (Path | str): name of the model save, assuming default dir location
+        model_class (Any): derived CVModel class, needed for initializing
+    """
+    
+    # export dir
+    weight_export_dir = Path().cwd() / "model-weights"
+    hp_export_dir = Path().cwd() / "model-hyperparams"
+    
+    if not weight_export_dir.exists():
+        raise FileNotFoundError(f"weights directory ({weight_export_dir.absolute()}) doesn't exist")
+    if not hp_export_dir.exists():
+        raise FileNotFoundError(f"hyperparams directory ({hp_export_dir.absolute()}) doesn't exist")
+    
+    # load the hyperparams
+    with open(hp_export_dir / path, "r") as f:
+        hp = load(f)
+        
+    # load state dict
+    model = model_class.__init__(hyperparams=hp)
+    model.load_state_dict(torch.load(weight_export_dir / path, weights_only=True))
+    model.eval()
+
+    # conclude
+    print(f"Saved model to {weight_export_dir / path}, hyperparams to {hp_export_dir / path}")
 
 # --- Interface --- #
 class CVModel(metaclass = ABCMeta):
     # methods we expect to be overridden
     @abstractmethod
-    def train(loader: torch.utils.data.DataLoader,
-              optimizer: torch.optim.Optimizer,
-              loss_fn: torch.nn.CrossEntropyLoss,
-              **kwargs):
+    def train(self, train_loader: torch.utils.data.DataLoader,
+              val_loader: torch.utils.data.DataLoader, **kwargs):
         pass
     
     @abstractmethod
-    def validate(loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs):
+    def validate(loader: torch.utils.data.DataLoader, **kwargs):
         pass
     
     @abstractmethod
-    def test(loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs) -> torch.Tensor:
+    def test(loader: torch.utils.data.DataLoader, **kwargs) -> torch.Tensor:
         pass
     
     @abstractmethod
@@ -223,6 +278,10 @@ class CVModel(metaclass = ABCMeta):
     
     @abstractmethod
     def save(path: Path | str, **kwargs) -> None:
+        pass
+    
+    @abstractmethod
+    def load(path: Path | str, model_class, **kwargs) -> None:
         pass
     
     @abstractmethod

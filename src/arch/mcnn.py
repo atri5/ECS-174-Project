@@ -22,9 +22,10 @@ from src.arch.interface import *
 # --- Model --- #
 class MCNN(nn.Module, CVModel):
     # build model
-    def __init__(self, **kwargs):
+    def __init__(self, hyperparams, **kwargs):
         # build up parents
         super(MCNN, self).__init__()
+        self.hyperparams = hyperparams
         
         # convolution & pooling layers
         self.conv = nn.ModuleList([
