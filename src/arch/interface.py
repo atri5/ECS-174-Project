@@ -201,6 +201,24 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
         print("Finished Training!")
         return metrics
 
+def tester(hyperparams: dict[str, Any], epoch_model: nn.Module, test_loader) -> dict[str, float]:
+    """Computes the accuracy, loss, and other useful metrics on the testing 
+    set.
+
+    Args:
+        hyperparams (dict[str, Any]): hyperparameters to use.
+        epoch_model (CVModel): model to validate.
+        test_loader (_type_): dataloader for the test set
+
+    Returns:
+        dict[str, float]: returns a dictionary lookup of:
+            - loss, however it is computed via hyperparams
+            - accuracy
+    """
+    
+    # wrap validation
+    return validation(hyperparams, epoch_model, test_loader)
+
 def saver(hyperparams: dict[str, Any], model: nn.Module, path: Path | str) -> None:
     """Saves the model state and hyperparams.
 
