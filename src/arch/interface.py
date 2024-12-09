@@ -27,7 +27,7 @@ from json import dump, load
 NUM_INPUT_CHANNELS = 3
 NUM_OUTPUT_CLASSES = 3
 IMAGE_DIMS = (224, 224)
-DEVICE = "cuda" if torch.cuda.is_available else "cpu"
+DEVICE = "cuda" if torch.cuda.is_available else "mps"
 
 
 # --- Helper Functions --- #
