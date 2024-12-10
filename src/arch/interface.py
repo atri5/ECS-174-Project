@@ -159,6 +159,7 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
     NUM_EPOCHS = hyperparams["nepochs"]
     
     # training loop
+    print("Checkpoint> Starting training...")
     for epoch in range(NUM_EPOCHS):
         # running metrics
         running_loss = 0.0
@@ -200,11 +201,11 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
             metrics["val_loss"].append(val_metrics["loss"])
             
             # print report each epoch
-            print(f"<Epoch ({epoch + 1} / {NUM_EPOCHS})>")
-            print(f"\ttrain loss = {running_loss}")
-            print(f"\ttrain acc = {num_correct / num_samples}")
-            print(f"\tval loss = {val_metrics['loss']}")
-            print(f"\tval acc = {val_metrics['acc']}")
+            print(f"\tEpoch ({epoch + 1} / {NUM_EPOCHS})>")
+            print(f"\t\ttrain loss = {running_loss:.4f}")
+            print(f"\t\ttrain acc = {num_correct / num_samples * 100:.2f}%")
+            print(f"\t\tval loss = {val_metrics['loss']:.4f}")
+            print(f"\t\tval acc = {val_metrics['acc'] * 100:.2f}%")
             
             # early stopping
             early_stopper += 1
