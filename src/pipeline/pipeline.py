@@ -35,7 +35,7 @@ class Pipeline(object):
         self.model_descr = model_descr
 
 
-    def init_dataloader(self, image_dir: Path | str, metadata_dir: Path | str, batch_size = 32, manual_seed = 110):
+    def init_dataloader(self, image_dir: Path | str, metadata_dir: Path | str, batch_size=32):
         # set seed for reproducibility
         print("dataloader initialized")
         torch.manual_seed(RAND_SEED)
@@ -57,11 +57,14 @@ class Pipeline(object):
         train_size = int(total_size * TTV_SPLIT[0])
         test_size = int(total_size * TTV_SPLIT[1])
         val_size = total_size - train_size - test_size 
-        train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
+        train_dataset, val_dataset, test_dataset = random_split(
+            dataset,
+            [train_size, val_size, test_size]
+        )
         
         # Create DataLoader with tqdm for progress bar
-        self.train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-        self.val_loader = DataLoader(val_dataset, batch_size=32, shuffle=True)
+        self.train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        self.val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
         self.test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
         
         # # dataloader w/ progress bar
@@ -109,7 +112,7 @@ class Pipeline(object):
 # Testing
 def main():
     # collect directories
-    data_dir = Path().cwd() / "src" / "dataset" / "rsna-2024-lumbar-spine-degenerative-classification"
+    data_dir = Path().cwd() / "data"
     img_dir = data_dir / "train_images"
     
     # initialize model

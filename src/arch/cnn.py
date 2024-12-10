@@ -43,8 +43,9 @@ class CNN(nn.Module, CVModel):
         self.class_fn = nn.Softmax()
         
         # linear classifier layers
+        self.connect_n = 32 * 22 * 22
         self.fc = nn.ModuleList([
-            nn.Linear(32 * 7 * 7, 256),
+            nn.Linear(self.connect_n, 256),
             nn.Linear(256, 64),
             nn.Linear(64, NUM_OUTPUT_CLASSES)
         ])
@@ -54,8 +55,8 @@ class CNN(nn.Module, CVModel):
         for i in range(len(self.conv)):
             x = self.pool(self.conv_act(self.conv[i](x)))
         
-        # reshape
-        x = x.view(-1, 32 * 7 * 7)
+        # reshape as vector
+        x = x.view(-1, self.connect_n)
         
         # linear classification
         for i in range(len(self.fc) - 1):

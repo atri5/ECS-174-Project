@@ -96,7 +96,7 @@ def validation(hyperparams: dict[str, Any], epoch_model: nn.Module, val_loader) 
     """
     
     # setup loss
-    val_criterion = hyperparams["loss_fn"]()
+    val_criterion = hyperparams["loss"]()
     
     # trackers
     correct = 0
@@ -109,7 +109,7 @@ def validation(hyperparams: dict[str, Any], epoch_model: nn.Module, val_loader) 
         
         for data in val_loader:
             # unpack the data
-            images, labels = data
+            images, labels = data["image"], data["severity"].long()
             images, labels = images.to(DEVICE), labels.to(DEVICE)
             
             # generate predictions
@@ -199,22 +199,29 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
             metrics["val_acc"].append(val_metrics["acc"])
             metrics["val_loss"].append(val_metrics["loss"])
             
-            # early stopping
-            early_stopper += 1
-            if metrics["val_loss"] < early_stop_loss:
-                early_stopper = 1
-                early_stop_loss = metrics["val_loss"]
-                
-            if early_stopper >= hyperparams["nearly_stop"]:
-                print(f"Stopping early @ Epoch {epoch + 1}!")
-                break
-            
             # print report each epoch
             print(f"<Epoch ({epoch + 1} / {NUM_EPOCHS})>")
             print(f"\ttrain loss = {running_loss}")
             print(f"\ttrain acc = {num_correct / num_samples}")
             print(f"\tval loss = {val_metrics['loss']}")
             print(f"\tval acc = {val_metrics['acc']}")
+            
+            # early stopping
+            early_stopper += 1
+            if val_metrics["loss"] < early_stop_loss:
+                early_stopper = 1
+                early_stop_loss = metrics["val_loss"]
+                
+                # save the weights as a checkpoint
+                checkpoint_path = f"checkpt_{model.__class__.__name__}"
+                print(f"\t** saving model to {checkpoint_path} **")
+                saver(
+                    hyperparams, model, path=checkpoint_path
+                )
+                
+            if early_stopper >= hyperparams["nearly_stop"]:
+                print(f"Stopping early @ Epoch {epoch + 1}!")
+                break
         
         # export metrics data
         print("Finished Training!")
