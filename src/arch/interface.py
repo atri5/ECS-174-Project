@@ -224,9 +224,9 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
             print(f"Stopping early @ Epoch {epoch + 1}!")
             break
     
-        # export metrics data
-        print("Finished Training!")
-        return metrics
+    # export metrics data
+    print("Finished Training!")
+    return metrics
 
 def tester(hyperparams: dict[str, Any], epoch_model: nn.Module, test_loader) -> dict[str, float]:
     """Computes the accuracy, loss, and other useful metrics on the testing 

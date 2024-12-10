@@ -33,8 +33,7 @@ class Pipeline(object):
         self.model = model
         self.device = DEVICE
         self.model_descr = model_descr
-
-
+        
     def init_dataloader(self, image_dir: Path | str, metadata_dir: Path | str, batch_size=32):
         # set seed for reproducibility
         print("dataloader initialized")
@@ -66,26 +65,18 @@ class Pipeline(object):
         self.train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         self.val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
         self.test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
-        
-        # # dataloader w/ progress bar
-        # dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
-    
     
     def split_loader(self, dataset: DataLoader) -> None:
         """Split the dataloader into a train, test, and validation set.
         """
         pass
     
-
-
-    def run_pipeline(self) -> dict[str, Any]:
+    def training(self) -> dict[str, Any]:
         """Wraps the full training pipeline.
 
         Returns:
             dict[str, Any]: metrics
         """
-        #split ttv data
-
 
         # train & test
         train_metrics = self.model.train_model(
@@ -101,12 +92,17 @@ class Pipeline(object):
         plot_train_metrics(train_metrics, self.model_descr)
         
         ## for test metrics
-        print(f'Accuracy: {test_metrics["acc"]} %, Loss: {test_metrics["loss"]}')       
-
-
+        print(f"Accuracy: {test_metrics['acc']} %, Loss: {test_metrics['loss']}")
         
         # saving
         self.model.save(path=self.model_descr)
+        
+    def pipeline(self) -> dict[str, Any]:
+        """Runs the full pipeline for a given model
+
+        Returns:
+            dict[str, Any]: _description_
+        """
         
 
 # Testing
@@ -117,13 +113,13 @@ def main():
     
     # initialize model
     hp = load_hyperparams()
-    model = CNN(hp).to(DEVICE)
+    model_class = CNN
     
     # pipeline
-    pipe = Pipeline(model=model, model_descr="baseline_CNN")
-    dataset = pipe.init_dataloader(image_dir=img_dir, metadata_dir=data_dir)
-    pipe.split_loader(dataset=dataset)
-    pipe.run_pipeline()
+    pipe = Pipeline(
+        model_class=model_class, hyperparams=hp, model_descr="baseline_CNN",
+        image_dir=img_dir, metadata_dir=data_dir
+    )
 
 if __name__ == "__main__":
     main()

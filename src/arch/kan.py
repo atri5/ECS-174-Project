@@ -50,8 +50,9 @@ class CKAN(nn.Module, CVModel):
         self.class_fn = nn.Softmax()
         
         # linear classifier layers
+        self.connect_n = 32 * 22 * 22
         self.fc = nn.ModuleList([
-            nn.Linear(32 * 7 * 7, 256), # convert to linear first to make things efficient
+            nn.Linear(self.connect_n, 256), # convert to linear first to make things efficient
             SplineLinearLayer(256, 32),
             SplineLinearLayer(32, NUM_OUTPUT_CLASSES)
         ])
@@ -70,7 +71,7 @@ class CKAN(nn.Module, CVModel):
             x = self.pool(self.conv_act(x))
         
         # reshape
-        x = x.view(-1, 32 * 7 * 7)
+        x = x.view(-1, self.connect_n)
         
         # linear classification & normalization
         for i in range(len(self.fc) - 1):
