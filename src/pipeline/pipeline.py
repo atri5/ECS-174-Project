@@ -85,10 +85,10 @@ class Pipeline(object):
 
 
         # train & test
-        train_metrics = self.model.train(
+        train_metrics = self.model.train_model(
             self.train_loader, self.val_loader
         )
-        test_metrics = self.model.test(
+        test_metrics = self.model.test_model(
             self.test_loader
         )
 
