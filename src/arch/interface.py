@@ -177,7 +177,6 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
         model.train()
         for data in tqdm(train_loader):
             # unpack data
-            # unpack the data
             images, labels = data["image"], data["severity"].long()
             images, labels = images.to(device), labels.to(device)
             
