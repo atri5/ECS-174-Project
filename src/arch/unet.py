@@ -102,8 +102,10 @@ class UNet(nn.Module, CVModel):
                 
             concat_skip = torch.cat((skip_connection, x), dim = 1) #along channel dimension 
             x = self.ups[i + 1](concat_skip)
-
-        return self.final_conv(x)
+        
+        #global average pooling to fit training shape
+        x = torch.mean(self.final_conv(x), dim=(2, 3))
+        return x
     
         # function override
 
