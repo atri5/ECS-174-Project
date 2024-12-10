@@ -81,7 +81,7 @@ def load_hyperparams(mod_params: dict[str, Any]=None) -> dict[str, Any]:
     # export the completed hyperparams
     return agg_hp
 
-def validation(hyperparams: dict[str, Any], epoch_model: nn.Module, val_loader) -> dict[str, float]:
+def validation(hyperparams: dict[str, Any], epoch_model: nn.Module, val_loader, **kwargs) -> dict[str, float]:
     """Computes the accuracy, loss, and other useful metrics on the validation 
     set.
 
@@ -98,6 +98,7 @@ def validation(hyperparams: dict[str, Any], epoch_model: nn.Module, val_loader) 
     
     # setup loss
     val_criterion = hyperparams["loss"]()
+    device = kwargs.get("device", DEVICE)
     
     # trackers
     correct = 0
@@ -111,7 +112,7 @@ def validation(hyperparams: dict[str, Any], epoch_model: nn.Module, val_loader) 
         for data in val_loader:
             # unpack the data
             images, labels = data["image"], data["severity"].long()
-            images, labels = images.to(DEVICE), labels.to(DEVICE)
+            images, labels = images.to(device), labels.to(device)
             
             # generate predictions
             outputs = epoch_model(images)
@@ -157,6 +158,7 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
     early_stopper = 0
     early_stop_loss = float("inf")
     NUM_EPOCHS = hyperparams["nepochs"]
+    device = kwargs.get("device", DEVICE)
     
     # training loop
     print("Checkpoint> Starting training...")
@@ -172,7 +174,7 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
             # unpack data
             # unpack the data
             images, labels = data["image"], data["severity"].long()
-            images, labels = images.to(DEVICE), labels.to(DEVICE)
+            images, labels = images.to(device), labels.to(device)
             
             # generate predictions
             outputs = model(images)
@@ -228,7 +230,7 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
     print("Finished Training!")
     return metrics
 
-def tester(hyperparams: dict[str, Any], epoch_model: nn.Module, test_loader) -> dict[str, float]:
+def tester(hyperparams: dict[str, Any], epoch_model: nn.Module, test_loader, **kwargs) -> dict[str, float]:
     """Computes the accuracy, loss, and other useful metrics on the testing 
     set.
 
@@ -244,7 +246,7 @@ def tester(hyperparams: dict[str, Any], epoch_model: nn.Module, test_loader) -> 
     """
     
     # wrap validation
-    return validation(hyperparams, epoch_model, test_loader)
+    return validation(hyperparams, epoch_model, test_loader, **kwargs)
 
 def saver(hyperparams: dict[str, Any], model: nn.Module, path: Path | str) -> None:
     """Saves the model state and hyperparams.

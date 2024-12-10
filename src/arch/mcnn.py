@@ -34,9 +34,9 @@ class MCNN(nn.Module, CVModel):
             nn.Conv2d(16, 32, 7)
         ])
         self.conv_norm = nn.ModuleList([
-            nn.LayerNorm([8, *IMAGE_DIMS]),
-            nn.LayerNorm([16, *IMAGE_DIMS]),
-            nn.LayerNorm([32, *IMAGE_DIMS])
+            nn.LayerNorm([8, 218, 218]),
+            nn.LayerNorm([16, 103, 103]),
+            nn.LayerNorm([32, 45, 45])
         ])
         self.pool = nn.MaxPool2d(2, 2)
         

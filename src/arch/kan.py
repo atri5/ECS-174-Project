@@ -36,9 +36,9 @@ class CKAN(nn.Module, CVModel):
             nn.Conv2d(16, 32, 7)
         ])
         self.conv_norm = nn.ModuleList([
-            nn.LayerNorm([8, *IMAGE_DIMS]),
-            nn.LayerNorm([16, *IMAGE_DIMS]),
-            nn.LayerNorm([32, *IMAGE_DIMS])
+            nn.LayerNorm([8, 218, 218]),    # 224 - 6
+            nn.LayerNorm([16, 103, 103]),   # 218 / 2 - 6
+            nn.LayerNorm([32, 45, 45])      # 103 / 2 - 6 floored
         ])
         self.pool = nn.MaxPool2d(2, 2)
         
@@ -93,7 +93,7 @@ class CKAN(nn.Module, CVModel):
         """
         
         # wrap trainer call
-        trainer(self.hyperparams, self, train_loader, val_loader)
+        trainer(self.hyperparams, self, train_loader, val_loader, device="cpu")
     
     def validate_model(self, loader: torch.utils.data.DataLoader) -> dict[str, Any]:
         """Validation on the Conv KAN.
@@ -103,10 +103,20 @@ class CKAN(nn.Module, CVModel):
         """
         
         # wrap validator call
-        validation(self.hyperparams, self, loader)
+        validation(self.hyperparams, self, loader, device="cpu")
     
-    def test_model(self, loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs) -> torch.Tensor:
-        pass
+    def test_model(self, loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
+        """Wrap the call to the tester function.
+
+        Args:
+            loader (torch.utils.data.DataLoader): test data loader
+
+        Returns:
+            dict[str, Any]: metrics
+        """
+        
+        # wrap tester call
+        return tester(self.hyperparams, self, loader, device="cpu")
     
     def predict(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
         """Predict wrapper method for generating the prediction we want.

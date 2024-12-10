@@ -29,15 +29,21 @@ def load_model(self, input_channels = 1, output_classes = 3, ):
 
 # Framework
 class Pipeline(object):
-    def __init__(self, model, model_descr: str):
-        self.model = model
-        self.device = DEVICE
+    def __init__(self, model_class: CVModel, hyperparams: dict[str, Any], 
+                 model_descr: str, image_dir: Path | str,
+                 metadata_dir: Path | str):
+        self.device = DEVICE if model_class != CKAN else "cpu"
+        self.model = model_class(hyperparams).to(self.device)
+        self.hyperparams = hyperparams
         self.model_descr = model_descr
+        self.image_dir = image_dir
+        self.data_dir = metadata_dir
         
-    def init_dataloader(self, image_dir: Path | str, metadata_dir: Path | str, batch_size=32):
-        # set seed for reproducibility
-        print("dataloader initialized")
+    def init_dataloader(self):
+        # set seed for reproducibility + constants
+        print("initializing dataloader...")
         torch.manual_seed(RAND_SEED)
+        batch_size = self.hyperparams["batch_size"]
 
         # initialize data loader
         transform = transforms.Compose([ 
@@ -46,16 +52,16 @@ class Pipeline(object):
             transforms.Normalize((0.5), (0.5))
         ])
         dataset = LumbarSpineDataset(
-            image_dir=image_dir, metadata_dir=metadata_dir, transform=transform,
-            load_fraction=1
+            image_dir=self.image_dir, metadata_dir=self.data_dir,
+            transform=transform, load_fraction=1
         )
         
-        
-        #split data into train, validate
+        # split data into train, test, validate
         total_size = len(dataset)
         train_size = int(total_size * TTV_SPLIT[0])
         test_size = int(total_size * TTV_SPLIT[1])
-        val_size = total_size - train_size - test_size 
+        val_size = total_size - train_size - test_size
+        
         train_dataset, val_dataset, test_dataset = random_split(
             dataset,
             [train_size, val_size, test_size]
@@ -65,11 +71,6 @@ class Pipeline(object):
         self.train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         self.val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
         self.test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
-    
-    def split_loader(self, dataset: DataLoader) -> None:
-        """Split the dataloader into a train, test, and validation set.
-        """
-        pass
     
     def training(self) -> dict[str, Any]:
         """Wraps the full training pipeline.
@@ -97,12 +98,28 @@ class Pipeline(object):
         # saving
         self.model.save(path=self.model_descr)
         
+        # export compiled metrics
+        return {
+            "train": train_metrics,
+            "test": test_metrics
+        }
+        
     def pipeline(self) -> dict[str, Any]:
         """Runs the full pipeline for a given model
 
         Returns:
             dict[str, Any]: _description_
         """
+        
+        # load data
+        self.init_dataloader()
+        
+        # training
+        metrics = self.training()
+        return metrics
+        
+        # TODO @Ayush: visualizations
+        
         
 
 # Testing
@@ -113,13 +130,13 @@ def main():
     
     # initialize model
     hp = load_hyperparams()
-    model_class = CNN
+    model_class = CKAN
     
     # pipeline
     pipe = Pipeline(
         model_class=model_class, hyperparams=hp, model_descr="baseline_CNN",
         image_dir=img_dir, metadata_dir=data_dir
-    )
+    ).pipeline()
 
 if __name__ == "__main__":
     main()
