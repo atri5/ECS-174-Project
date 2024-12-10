@@ -19,6 +19,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Any
 from pathlib import Path
 from json import dump, load
+from time import time
 
 # internal modules
 ## none for now...
@@ -101,6 +102,7 @@ def validation(hyperparams: dict[str, Any], epoch_model: nn.Module, val_loader, 
     device = kwargs.get("device", DEVICE)
     
     # trackers
+    start_time = time()
     correct = 0
     total = 0
     sum_loss = 0
@@ -126,7 +128,8 @@ def validation(hyperparams: dict[str, Any], epoch_model: nn.Module, val_loader, 
     # return metrics
     return {
         "acc": correct / total,
-        "loss": sum_loss
+        "loss": sum_loss,
+        "duration": time.time() - start_time
     }
 
 def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loader, **kwargs) -> dict[str, Any]:
@@ -153,7 +156,8 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
         "train_loss": list(),
         "train_acc": list(),
         "val_loss": list(),
-        "val_acc": list()
+        "val_acc": list(),
+        "train_time": list()
     }
     early_stopper = 0
     early_stop_loss = float("inf")
@@ -164,6 +168,7 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
     print("Checkpoint> Starting training...")
     for epoch in range(NUM_EPOCHS):
         # running metrics
+        start_time = time()
         running_loss = 0.0
         num_correct = 0
         num_samples = 0
@@ -197,6 +202,7 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
         # update metrics
         metrics["train_loss"].append(running_loss)
         metrics["train_acc"].append(num_correct / num_samples)
+        metrics["train_time"].append(time() - start_time)
         
         val_metrics = validation(hyperparams, model, val_loader)
         metrics["val_acc"].append(val_metrics["acc"])
