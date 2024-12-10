@@ -2,7 +2,6 @@
 @authors Arjun Ashok (arjun3.ashok@gmail.com, arjashok@ucdavis.edu), Zhian Li,
 Ayush Tripathi
 
-
 > As deep learning becomes increasingly entrenched in our lives, it's no
 > surprise that research in how such models can assist medical professionals in
 > diagnosis is a hot topic. In this project, we aim to explore how baseline 
@@ -11,7 +10,6 @@ Ayush Tripathi
 > Networks) stack up against diagnosing lumbar conditions via radiology imagery.
 
 ## Usage
-
 ### Installation
 ```
 pip install -r requirements.txt

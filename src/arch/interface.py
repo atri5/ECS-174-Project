@@ -192,38 +192,38 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
             num_samples += len(outputs)
             running_loss += loss.cpu().item()
             
-            # update metrics
-            metrics["train_loss"].append(running_loss)
-            metrics["train_acc"].append(num_correct / num_samples)
-            
-            val_metrics = validation(hyperparams, model, val_loader)
-            metrics["val_acc"].append(val_metrics["acc"])
-            metrics["val_loss"].append(val_metrics["loss"])
-            
-            # print report each epoch
-            print(f"\tEpoch ({epoch + 1} / {NUM_EPOCHS})>")
-            print(f"\t\ttrain loss = {running_loss:.4f}")
-            print(f"\t\ttrain acc = {num_correct / num_samples * 100:.2f}%")
-            print(f"\t\tval loss = {val_metrics['loss']:.4f}")
-            print(f"\t\tval acc = {val_metrics['acc'] * 100:.2f}%")
-            
-            # early stopping
-            early_stopper += 1
-            if val_metrics["loss"] < early_stop_loss:
-                early_stopper = 1
-                early_stop_loss = metrics["val_loss"]
-                
-                # save the weights as a checkpoint
-                checkpoint_path = f"checkpt_{model.__class__.__name__}"
-                print(f"\t** saving model to {checkpoint_path} **")
-                saver(
-                    hyperparams, model, path=checkpoint_path
-                )
-                
-            if early_stopper >= hyperparams["nearly_stop"]:
-                print(f"Stopping early @ Epoch {epoch + 1}!")
-                break
+        # update metrics
+        metrics["train_loss"].append(running_loss)
+        metrics["train_acc"].append(num_correct / num_samples)
         
+        val_metrics = validation(hyperparams, model, val_loader)
+        metrics["val_acc"].append(val_metrics["acc"])
+        metrics["val_loss"].append(val_metrics["loss"])
+        
+        # print report each epoch
+        print(f"\tEpoch ({epoch + 1} / {NUM_EPOCHS})>")
+        print(f"\t\ttrain loss = {running_loss:.4f}")
+        print(f"\t\ttrain acc = {num_correct / num_samples * 100:.2f}%")
+        print(f"\t\tval loss = {val_metrics['loss']:.4f}")
+        print(f"\t\tval acc = {val_metrics['acc'] * 100:.2f}%")
+        
+        # early stopping
+        early_stopper += 1
+        if val_metrics["loss"] < early_stop_loss:
+            early_stopper = 1
+            early_stop_loss = metrics["val_loss"]
+            
+            # save the weights as a checkpoint
+            checkpoint_path = f"checkpt_{model.__class__.__name__}"
+            print(f"\t** saving model to {checkpoint_path} **")
+            saver(
+                hyperparams, model, path=checkpoint_path
+            )
+            
+        if early_stopper >= hyperparams["nearly_stop"]:
+            print(f"Stopping early @ Epoch {epoch + 1}!")
+            break
+    
         # export metrics data
         print("Finished Training!")
         return metrics
@@ -270,7 +270,7 @@ def saver(hyperparams: dict[str, Any], model: nn.Module, path: Path | str) -> No
     # save the hyperparams
     str_hp = {k: str(v) for k, v in hyperparams.items()}
     with open(hp_export_dir / path, "w") as f:
-        dump(hyperparams, f, indent=4)
+        dump(str_hp, f, indent=4)
 
     # conclude
     print(f"Saved model to {weight_export_dir / path}, hyperparams to {hp_export_dir / path}")
