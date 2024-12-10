@@ -11,6 +11,7 @@ import torch
 import torch.nn as nn
 import torchvision.transforms.functional as tf
 import torch.functional as F
+import torch.utils.checkpoint as checkpoint
 import sys, os #for testing
 import tqdm #progress bar
 
@@ -54,8 +55,6 @@ class UNet(nn.Module, CVModel):
 
         
         self.features = [64,128,256,512]
-        
-        #set up model from hyperparam list
         self.hyperparams = hyperparams
         self.ups  = nn.ModuleList()    
         self.downs = nn.ModuleList()
@@ -63,24 +62,33 @@ class UNet(nn.Module, CVModel):
         in_channels = NUM_INPUT_CHANNELS
         out_channels = NUM_OUTPUT_CLASSES
 
-        #U-Net down portion
+        #U-Net Downsampling
         for feature in self.features:
             self.downs.append(DoubleConv(in_channels, feature))
             in_channels = feature
         
-        #U-Net Up portion
-        for feature in reversed(self.features):
-            self.ups.append(nn.ConvTranspose2d(feature*2, feature, kernel_size=2, stride=2 )) #double feature size for skip connections on each up layer
-            self.ups.append(DoubleConv(feature*2, feature))
-        
-        #U-Net bottleneck layer
+        #U-Net bottleneck Layer
         self.bottleneck = DoubleConv(self.features[-1], self.features[-1] * 2)
+
+        #U-Net Upsampling
+        for feature in reversed(self.features):
+            self.ups.append(
+                nn.Sequential(
+                    nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True),
+                    nn.Conv2d(feature * 2, feature, kernel_size=1)
+                )
+            )
+             #double feature size for skip connections on each up layer
+            self.ups.append(DoubleConv(feature*2, feature))  
         self.final_conv = nn.Conv2d(self.features[0], out_channels, kernel_size=1)
 
     def forward(self,x):
         skip_connections = []
+        x.requires_grad = True  # Enable gradients for inputs if needed(was throwing error previously)
+
+        # Check model parameters
         for down in self.downs:
-            x = down(x)
+            x = checkpoint.checkpoint(down, x, use_reentrant=False)
             skip_connections.append(x)
             x = self.pool(x)
         
@@ -95,8 +103,6 @@ class UNet(nn.Module, CVModel):
 
             #if the x dim are different than skip dims before concatenation, pad and resize
             if(x.shape != skip_connection.shape):
-                #for PIL images, use:
-                #x = tf.resize(x, size =skip_connection.shape[2:] )
                 #for tensors, use:
                 x = torch.nn.functional.interpolate(x, size=skip_connection.shape[2:], mode="bilinear", align_corners=True)
                 
@@ -104,7 +110,8 @@ class UNet(nn.Module, CVModel):
             x = self.ups[i + 1](concat_skip)
         
         #global average pooling to fit training shape
-        x = torch.mean(self.final_conv(x), dim=(2, 3))
+        x = self.final_conv(x)
+        x = torch.mean(x, dim=(2, 3))
         return x
     
         # function override
