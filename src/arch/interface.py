@@ -12,6 +12,7 @@ import torch.nn as nn
 import torch.functional as F
 import torch.optim as optim
 import numpy as np
+from tqdm import tqdm
 
 # built-in modules
 from abc import ABCMeta, abstractmethod
@@ -166,7 +167,7 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
         
         # batch iteration
         model.train()
-        for data in train_loader:
+        for data in tqdm(train_loader):
             # unpack data
             # unpack the data
             images, labels = data["image"], data["severity"].long()
@@ -174,7 +175,6 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
             
             # generate predictions
             outputs = model(images)
-            _, predicted = torch.max(outputs.data, 1)
             
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -267,6 +267,7 @@ def saver(hyperparams: dict[str, Any], model: nn.Module, path: Path | str) -> No
     torch.save(model.state_dict(), weight_export_dir / path)
 
     # save the hyperparams
+    str_hp = {k: str(v) for k, v in hyperparams.items()}
     with open(hp_export_dir / path, "w") as f:
         dump(hyperparams, f, indent=4)
 
