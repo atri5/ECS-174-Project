@@ -8,7 +8,7 @@
 import torch
 from tqdm import tqdm
 from PIL import Image
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, random_split
 from torchvision import transforms
 from pathlib import Path
 
@@ -19,7 +19,7 @@ from src.arch.unet import *
 from src.arch.cnn import *
 from src.arch.mcnn import *
 from src.arch.kan import *
-from utils.visualization import *
+from src.utils.visualization import *
 
 
 # Helper Methods
@@ -50,28 +50,29 @@ class Pipeline(object):
             image_dir=image_dir, metadata_dir=metadata_dir, transform=transform,
             load_fraction=1
         )
-
-        # dataloader w/ progress bar
-        dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
-        return dataloader
+        
+        
+        #split data into train, validate
+        total_size = len(dataset)
+        train_size = int(total_size*0.7)
+        test_size = int(total_size * 0.1)
+        val_size = total_size - train_size - test_size 
+        train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
+        
+        # Create DataLoader with tqdm for progress bar
+        self.train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+        self.val_loader = DataLoader(val_dataset, batch_size=32, shuffle=True)
+        self.test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+        
+        # # dataloader w/ progress bar
+        # dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+    
     
     def split_loader(self, dataset: DataLoader) -> None:
         """Split the dataloader into a train, test, and validation set.
         """
-        #store train_loader, val_loader, and test_loader into object
-        self.train_loader = None
-        self.val_loader = None
-        self.test_loader = None
         pass
     
-    """
-    Plot training and validation loss and accuracy.
-
-    Args:
-        metrics (dict): Dictionary containing train/val loss and accuracy.
-    """
-    epochs = range(1, len(metrics["train_loss"]) + 1)
-
 
 
     def run_pipeline(self) -> dict[str, Any]:
