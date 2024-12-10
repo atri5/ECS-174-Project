@@ -320,10 +320,6 @@ class CVModel(metaclass = ABCMeta):
         pass
     
     @abstractmethod
-    def load(path: Path | str, model_class, **kwargs) -> None:
-        pass
-    
-    @abstractmethod
     def interpret_model(test_input: Any, **kwargs) -> Any:
         pass
 
