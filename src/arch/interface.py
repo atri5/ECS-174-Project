@@ -78,7 +78,7 @@ def load_hyperparams(mod_params: dict[str, Any]=None) -> dict[str, Any]:
     }
     
     # export the completed hyperparams
-    return defaults
+    return agg_hp
 
 def validation(hyperparams: dict[str, Any], epoch_model: nn.Module, val_loader) -> dict[str, float]:
     """Computes the accuracy, loss, and other useful metrics on the validation 
