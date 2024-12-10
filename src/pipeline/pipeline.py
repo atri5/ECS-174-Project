@@ -107,18 +107,21 @@ class Pipeline(object):
         
 
 # Testing
-if __name__ == "__main__":
+def main():
     # collect directories
     data_dir = Path().cwd() / "src" / "dataset" / "rsna-2024-lumbar-spine-degenerative-classification"
     img_dir = data_dir / "train_images"
     
     # initialize model
     hp = load_hyperparams()
-    model = CNN(hp)
+    model = CNN(hp).to(DEVICE)
     
     # pipeline
     pipe = Pipeline(model=model, model_descr="baseline_CNN")
     dataset = pipe.init_dataloader(image_dir=img_dir, metadata_dir=data_dir)
     pipe.split_loader(dataset=dataset)
     pipe.run_pipeline()
+
+if __name__ == "__main__":
+    main()
     
