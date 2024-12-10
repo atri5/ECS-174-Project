@@ -48,7 +48,8 @@ def load_hyperparams(mod_params: dict[str, Any]=None) -> dict[str, Any]:
         "nearly_stop": 5,   # 10 epochs before early stopping
         "nepochs": 30,  # 30 epochs to train
         "batch_size": 32,  # 32 images per batch
-        "lr": 0.0001,   # learning rate
+        "lr": 1e-4,   # learning rate
+        "momentum": 0.7,    # momentum, not used w/ Adam
         "optimizer": optim.Adam,    # optimizer to use
         "loss_fn": nn.CrossEntropyLoss, # loss fn to use
         "class_fn": nn.Softmax  # function to operate on the final outputs
@@ -57,8 +58,23 @@ def load_hyperparams(mod_params: dict[str, Any]=None) -> dict[str, Any]:
         # replace any of the defaults
         for mod_param, mod_value in mod_params.items():
             if mod_param not in defaults:
-                print(f"<WARNING> adding non-default {mod_param=} w/ {mod_value=}")
+                print(f"<WARNING> skipping adding non-default {mod_param=} w/ {mod_value=}")
             defaults[mod_param] = mod_value
+            
+    # group hyperparams
+    agg_hp = {
+        "optimizer": defaults["optimizer"],
+        "optimizer_kwargs": {
+            "lr": defaults["lr"]
+            # "momentum": defaults["momentum"]
+        },
+        "loss": defaults["loss_fn"],
+        "loss_kwargs": {},
+        "nearly_stop": defaults["nearly_stop"],
+        "nepochs": defaults["nepochs"],
+        "batch_size": defaults["batch_size"],
+        "class_fn": defaults["class_fn"]
+    }
     
     # export the completed hyperparams
     return defaults
@@ -124,8 +140,10 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
     """
     
     # setup the optimizer & loss
-    optimizer = hyperparams["optimizer"](lr=hyperparams["lr"])
-    criterion = hyperparams["loss_fn"]()
+    optimizer = hyperparams["optimizer"](
+        model.parameters(), **hyperparams["optimizer_kwargs"]
+    )
+    criterion = hyperparams["loss"](**hyperparams["loss_kwargs"])
     
     # track metrics
     metrics = {

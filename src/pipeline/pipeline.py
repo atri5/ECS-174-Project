@@ -54,8 +54,8 @@ class Pipeline(object):
         
         #split data into train, validate
         total_size = len(dataset)
-        train_size = int(total_size*0.7)
-        test_size = int(total_size * 0.1)
+        train_size = int(total_size * TTV_SPLIT[0])
+        test_size = int(total_size * TTV_SPLIT[1])
         val_size = total_size - train_size - test_size 
         train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
         
