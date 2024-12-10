@@ -50,6 +50,7 @@ def load_hyperparams(mod_params: dict[str, Any]=None) -> dict[str, Any]:
         "batch_size": 32,  # 32 images per batch
         "lr": 1e-4,   # learning rate
         "momentum": 0.7,    # momentum, not used w/ Adam
+        "dropout": 0.3, # dropout rate
         "optimizer": optim.Adam,    # optimizer to use
         "loss_fn": nn.CrossEntropyLoss, # loss fn to use
         "class_fn": nn.Softmax  # function to operate on the final outputs
