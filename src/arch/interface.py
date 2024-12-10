@@ -169,7 +169,7 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
         for data in train_loader:
             # unpack data
             # unpack the data
-            images, labels = data["image"], data["severity"]
+            images, labels = data["image"], data["severity"].long()
             images, labels = images.to(DEVICE), labels.to(DEVICE)
             
             # generate predictions
