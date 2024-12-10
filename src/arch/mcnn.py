@@ -80,7 +80,7 @@ class MCNN(nn.Module, CVModel):
         return x
     
     # override methods
-    def train(self, train_loader: torch.utils.data.DataLoader,
+    def train_model(self, train_loader: torch.utils.data.DataLoader,
               val_loader: torch.utils.data.DataLoader, **kwargs):
         """Wraps the trainer method for the MCNN training.
 
@@ -92,7 +92,7 @@ class MCNN(nn.Module, CVModel):
         # wrap trainer call
         trainer(self.hyperparams, self, train_loader, val_loader)
     
-    def validate(self, loader: torch.utils.data.DataLoader) -> dict[str, Any]:
+    def validate_model(self, loader: torch.utils.data.DataLoader) -> dict[str, Any]:
         """Validation on the MCNN.
 
         Args:
@@ -102,7 +102,7 @@ class MCNN(nn.Module, CVModel):
         # wrap validator call
         validation(self.hyperparams, self, loader)
     
-    def test(self, loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
+    def test_model(self, loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
         """Wrap the call to the tester function.
 
         Args:

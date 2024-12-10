@@ -107,14 +107,14 @@ class UNet(nn.Module, CVModel):
     
         # function override
 
-    def train(self, train_loader: torch.utils.data.DataLoader,
+    def train_model(self, train_loader: torch.utils.data.DataLoader,
               val_loader: torch.utils.data.DataLoader, **kwargs):
         trainer(self.hyperparams, self, train_loader, val_loader)
                 
-    def validate(self, loader: torch.utils.data.DataLoader):
+    def validate_model(self, loader: torch.utils.data.DataLoader):
         validation(self.hyperparams, self, loader )
     
-    def test(self, loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs):
+    def test_model(self, loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs):
         pass
 
     def predict(self, loader: torch.utils.data.DataLoader, **kwargs):

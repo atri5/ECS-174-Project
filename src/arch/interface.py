@@ -299,16 +299,16 @@ def loader(path: Path | str, model_class: Any) -> nn.Module:
 class CVModel(metaclass = ABCMeta):
     # methods we expect to be overridden
     @abstractmethod
-    def train(self, train_loader: torch.utils.data.DataLoader,
+    def train_model(self, train_loader: torch.utils.data.DataLoader,
               val_loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
         pass
     
     @abstractmethod
-    def validate(loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
+    def validate_model(loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
         pass
     
     @abstractmethod
-    def test(loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
+    def test_model(loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
         pass
     
     @abstractmethod

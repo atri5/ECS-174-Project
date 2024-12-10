@@ -82,7 +82,7 @@ class CKAN(nn.Module, CVModel):
         return x
     
     # override methods
-    def train(self, train_loader: torch.utils.data.DataLoader,
+    def train_model(self, train_loader: torch.utils.data.DataLoader,
               val_loader: torch.utils.data.DataLoader, **kwargs):
         """Wraps the trainer method for the Conv KAN training.
 
@@ -94,7 +94,7 @@ class CKAN(nn.Module, CVModel):
         # wrap trainer call
         trainer(self.hyperparams, self, train_loader, val_loader)
     
-    def validate(self, loader: torch.utils.data.DataLoader) -> dict[str, Any]:
+    def validate_model(self, loader: torch.utils.data.DataLoader) -> dict[str, Any]:
         """Validation on the Conv KAN.
 
         Args:
@@ -104,7 +104,7 @@ class CKAN(nn.Module, CVModel):
         # wrap validator call
         validation(self.hyperparams, self, loader)
     
-    def test(self, loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs) -> torch.Tensor:
+    def test_model(self, loader: torch.utils.data.DataLoader, loss_fn: Any, **kwargs) -> torch.Tensor:
         pass
     
     def predict(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
