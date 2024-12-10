@@ -134,7 +134,7 @@ def main():
     
     # pipeline
     pipe = Pipeline(
-        model_class=model_class, hyperparams=hp, model_descr="baseline_CNN",
+        model_class=model_class, hyperparams=hp, model_descr=f"trial_ckan",
         image_dir=img_dir, metadata_dir=data_dir
     ).pipeline()
 
