@@ -116,6 +116,13 @@ class Pipeline(object):
         
         # training
         metrics = self.training()
+        
+        # save metrics
+        metrics_path = Path().cwd() / "model-reports"
+        
+        with open(metrics_path / self.model_descr, "w") as f:
+            dump(metrics, f, indent=4)
+            
         return metrics
         
         # TODO @Ayush: visualizations
@@ -133,7 +140,7 @@ def main():
     model_class = CKAN
     
     # pipeline
-    pipe = Pipeline(
+    res = Pipeline(
         model_class=model_class, hyperparams=hp, model_descr=f"trial_ckan",
         image_dir=img_dir, metadata_dir=data_dir
     ).pipeline()
