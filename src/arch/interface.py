@@ -102,7 +102,7 @@ def validation(hyperparams: dict[str, Any], epoch_model: nn.Module, val_loader, 
     device = kwargs.get("device", DEVICE)
     
     # trackers
-    start_time = time.time()  
+    start_time = time()  
     correct = 0
     total = 0
     sum_loss = 0
@@ -129,7 +129,7 @@ def validation(hyperparams: dict[str, Any], epoch_model: nn.Module, val_loader, 
     return {
         "acc": correct / total,
         "loss": sum_loss,
-        "duration": time.time() - start_time
+        "duration": time() - start_time
     }
 
 def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loader, **kwargs) -> dict[str, Any]:
