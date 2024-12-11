@@ -119,6 +119,8 @@ class Pipeline(object):
         
         # save metrics
         metrics_path = Path().cwd() / "model-reports"
+        if not metrics_path.exists():
+            metrics_path.mkdir()
         
         with open(metrics_path / self.model_descr, "w") as f:
             dump(metrics, f, indent=4)
