@@ -102,7 +102,7 @@ def validation(hyperparams: dict[str, Any], epoch_model: nn.Module, val_loader, 
     device = kwargs.get("device", DEVICE)
     
     # trackers
-    start_time = time()
+    start_time = time.time()  
     correct = 0
     total = 0
     sum_loss = 0
