@@ -1,0 +1,175 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{Deep Learning for Lumbar Spine Classification}
+
+\author{\IEEEauthorblockN{Arjun Ashok}
+\IEEEauthorblockA{\textit{Department of Computer Science, Statistics} \\
+\textit{University of California, Davis}\\
+Davis, USA\\
+arjun3.ashok@gmail.com}
+\and
+\IEEEauthorblockN{Zhian Li}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+\and
+\IEEEauthorblockN{Ayush Tripathi}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+}
+
+\maketitle
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{abstract}
+As deep learning becomes increasingly prevalent across industries, research into how such models can assist medical professionals in diagnosing conditions has become a popular endeavor. In this project, we explored how baseline vision models (e.g. classic CNN), state-of-the-art vision models (U-Net, Vision Transformer), and novel model architectures (Kolmogorov-Arnold Networks) stack up against each other in the context of diagnosing lumbar conditions via radiology imagery provided by RSNA. We then compare our architecture results against prior work using ResNets to generate a more thorough conclusion on what models may fair better in future applications of deep learning in diagnosis from the perspective of performance and interpretability.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Deep Learning, Medical Imaging, CNN, U-Net, Transformer, KAN
+\end{IEEEkeywords}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+\subsection{Problem}
+Lower back pain is the leading cause of disability in the world, impacting over 619 million people world-wide \cite{WHO}. Spondylosis encapsulates a set of degenerative spinal conditions that can be diagnosed via Magnetic Resonance Imaging (MRI). In this dataset, we aim to help diagnose the following subsets of Spondylosis:
+\begin{itemize}
+    \item Left Neural Foraminal Narrowing
+    \item Right Neural Foraminal Narrowing
+    \item Left Subarticular Stenosis
+    \item Right Subarticular Stenosis
+    \item Spinal Canal Stenosis
+\end{itemize}
+
+The surge in deep learning being applied in a controlled manner to assist medical professionals in making a diagnosis
+
+Each imaging study in the dataset includes severity scores (Normal/Mild, Moderate, Severe) and intervertebral disc level information (L1/L2, L2/L3, L3/L4, L4/L5, L5/S1).
+
+\subsection{Motivation}
+Prior to the competition being hosted on Kaggle, no research or intense application of machine learning for this specific problem has been developed. Thus, by building a tool that targets a widespread and essential medical condition through computationally-powered early diagnosis, we can ensure that hundreds of millions globally can be treated.
+
+\subsection{Prior Work}
+Thus far, prior work has failed to achieve a remarkable performance with the large majority of models averaging a weighted log loss of around 0.36. We use this measurement as our baseline and hope to improve upon it via a more intelligent model architecture.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Dataset}
+\subsection{Source}
+As mentioned previously, we leverage the dataset collected by the Radiological Society of North America (RSNA) in partnership with the American Society of Neuroradiology (ASNR).
+
+- include example plot of images here
+- include stats about number of images
+- train test split
+
+\subsection{Transforms}
+- what transforms we use, why we use them
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Model Architectures}
+\subsection{Convolutional Neural Network (CNN)}
+Convolutional Neural Networks have become the de-facto architecture employed with image processing tasks in recent years. Their flexibility in learning filters specific for a given task rather than need pre-built/manually specified convolutional kernels allows them to outperform traditional MLPs quite effectively.
+
+Our deployed architecture makes use of two fundamental blocks:
+\begin{enumerate}
+    \item \textbf{Convolutional Process}: each convolutional process
+    consists of a 2D-convolutional layer ($7 \times 7$ kernel), a ReLU activation, and a 2D-Max-Pooling ($2 \times 2$ kernel). We stack 3 convolutional processes to conduct sufficient feature extraction (with 8, 16, then 32 channel outputs respectively).
+    
+    \item \textbf{Multi-Layer Perceptron (MLP)}: we feed the last convolutional process' outputs into a traditional multi-layer perceptron head of 3 fully-connected, linear layers to perform the classification. Recall our output layer will have 3 nodes, one for each severity.
+\end{enumerate}
+
+\subsection{Modified Convolutional Neural Network (MCNN)}
+The most recent trend in deep learning for computer vision is attention-based networks, i.e. vision transformers. To continue maintaing its relevancy, one group of researchers have augmented ConvNet to produce ConvNeXt: a CNN-based architecture that lends some architectural decisions from attention-based models \cite{convnet}. 
+
+- reference work Zhian found
+
+
+\subsection{U-Net (UNET)}
+- background on the model, reference original paper
+- say how we modified it
+
+
+\subsection{Vision Transformer (VIT)}
+Transformers were initially developed by Google Brain for processing and generating large sequences of data, particularly in text-related tasks such as translation \cite{transformer}. Recent work, however, has explored the use of transformers in vision settings--unsurprising since convolution has similarly proved useful for text-related tasks \cite{VIT} \cite{transformer}. The vision transformer has proved to be extremely effective at learning context within images, matching the performance of state-of-the-art models at a fraction of the compute \cite{VIT}.
+
+Briefly, vision transformers work by dividing an image into a grid of smaller cells, where each cell can be thought of as a token. As with text-related tasks, attention blocks are highly effective at making associations between tokens, allowing the vision transformer to leverage broader context across all grid cells. A convolutional network, in comparison, inherently relies on the surrounding region of a pixel to extract information, thereby prone to ignoring important context that is not spatially close-by.
+
+@zhian please explain the specifics of your implementation here
+
+
+\subsection{Convolutional Kolmogorov-Arnold Network (CKAN)}
+Kolmogorov-Arnold Networks are an alternative basis to the perceptron-learning networks that have thus far powered deep learning architectures.
+
+Briefly, deep learning is based on approximations--the objective of neural networks is to learn a manifold of some kind, i.e. approximate a function \cite{mlp_approx_thm}. The Universal Approximation Theorem enabled the Multi-Layer Perceptron architecture by roughly proving that feed-forward networks with non-polynomial activations can map between two Euclidean spaces (i.e. approximate any function) \cite{mlp_approx_thm}. Note here that this doesn't explicitly prove a method of convergence (global minimum), although backpropagation tends to estimate parameters well enough for practical use (local minimum) \cite{mlp_approx_thm}.
+
+However, an alternative basis has recently been explored with the Kolmogorov-Arnold Representation Theorem \cite{kan}. The theorem roughly states that any multivariate, continuous function can be decomposed into a \textit{finite} sum of single-variable, continuous functions \cite{kan_approx_thm}. The most promising application of this basis has been in learning activation functions as splines rather than a set function \cite{kan}. In addition to enabling a smaller network to emulate the performance of a larger MLP, this approach allows for increased interpretability by way of these learned splines \cite{kan}. This is analagous to a learned kernel in CNNs for better performance and interpretation.
+
+Due to its relatively new deployment, we opted to simply replace some of MLP layers from our MCNN model to these spline linear layers. Thus, our best point of comparison for KAN spline layers versus traditional MLP layers will be the MCNN.
+
+
+\subsection{Future Explorations}
+To ensure the cleanest comparison across architectures (and deal with time and computation constraints), we opted against integrating some potentially beneficial model-agnostic techniques. We highlight them here as future paths of exploration:
+\begin{itemize}
+    \item \textbf{Data Augmentation}: given the controlled environment of an MRI machine, most augmentations would likely not apply to our context without causing more harm than good for model training. However, some techniques such as jitter, horizontal flips, and slight blurring may help the model in deployment since patients may get restless during the long imaging process of an MRI and/or be place in either orientation.
+
+    \item \textbf{Pre-Training}: across all model, pre-training via a related task (e.g. X-ray imaging diagnosis) or even a generic task (e.g. ImageNet) may benefit the model's downstream performance. Exploring certain pre-text (pseudo) tasks may also be a worthwhile path to explore.
+
+    \item \textbf{Region Proposal}: although RPNs have proven highly effective in reducing overhead computation and improving bounding box regression, their inclusion in our models seem to distract from the simpler classification task. That being said, if future work aimed to provide doctor's with a region of interest to inspect (i.e. a bounding box output), an RPN would certainly warrant further consideration.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Results}
+\subsection{Computational Efficiency}
+- how fast was each model to train
+- how fast is each model in prediction
+- table comparing models
+- convergence graphs go here
+
+\subsection{Performance}
+- table comparing how accurate each model is
+- show example of misclassified images, correctly classified images
+
+\subsection{Model Interpretation}
+- what can each architecture teach us about the diagnosing process?
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+- how did we end up comparing to the models we wanted to outperform?
+- any lessons learned?
+- future goals / building on this research
+- threats to validity
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Authors \& Acknowledgment}
+\begin{itemize}
+    \item \textbf{Arjun Ashok}: project lead; built core model architecture \& methods, implemented CNN, MCNN, KAN, researched architectures%, and interpreted models. %Wrote abstract, introduction, model architecture, and parts of results \& conclusion
+    \item \textbf{Zhian Li}: contributions go here
+    \item \textbf{Ayush Tripathi}: contributions go here
+\end{itemize}
+
+We'd also like to extend our appreciation to Professor Hamed Pirsiavash for an informative course and the TA's of ECS 174, Raymond Kang and Kossar Pourahmadi-Meibodi for their efforts in teaching.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliographystyle{plain}
+\bibliography{refs}
+
+\end{document}
