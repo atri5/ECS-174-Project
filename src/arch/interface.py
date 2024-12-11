@@ -102,7 +102,7 @@ def validation(hyperparams: dict[str, Any], epoch_model: nn.Module, val_loader, 
     device = kwargs.get("device", DEVICE)
     
     # trackers
-    start_time = time()  
+    start_time = time()
     correct = 0
     total = 0
     sum_loss = 0
@@ -216,7 +216,7 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
         
         # early stopping
         early_stopper += 1
-        if val_metrics["loss"] < early_stop_loss:
+        if val_metrics["loss"].item() < early_stop_loss:
             early_stopper = 1
             early_stop_loss = metrics["val_loss"]
             
