@@ -133,7 +133,7 @@ def plot_train_metrics(metrics: dict, desc: str):
     plt.ylabel("Accuracy")
     plt.legend()
     plt.grid(True)
-    plt.savefig(SAVEDIR / f"{desc}_train_loss.png", dpi=400)
+    plt.savefig(SAVEDIR / f"{desc}_train_accuracy.png", dpi=400)
     plt.show()
 
 if __name__ == "__main__":
