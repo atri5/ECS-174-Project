@@ -1,6 +1,6 @@
 # ECS 174: Deep Learning for Lumbar Classification
 @authors Arjun Ashok (arjun3.ashok@gmail.com, arjashok@ucdavis.edu), Zhian Li,
-Ayush Tripathi
+Ayush Tripathi(atripathi7783@gmail.com, atripathi@ucdavis.edu)
 
 > As deep learning becomes increasingly entrenched in our lives, it's no
 > surprise that research in how such models can assist medical professionals in
