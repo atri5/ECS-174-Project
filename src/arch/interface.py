@@ -18,6 +18,7 @@ from gradcam.utils import visualize_cam
 from tqdm import tqdm
 
 # built-in modules
+import warnings
 from abc import ABCMeta, abstractmethod
 from typing import Any
 from pathlib import Path
@@ -335,6 +336,7 @@ def cnn_interpreter(model: nn.Module, train_loader: Any, target_layer: Any=None,
     img, label = data["image"][0].to(device), data["severity"][0].to(device).item()
 
     # ## attempt 1 ##
+    # # use `pip install grad-cam` to get this package
     # # grab the target layers to analyze
     # target_layers = [model.conv[-1]]      # assume model has a conv backbone
     # targets = [ClassifierOutputTarget(label)]
@@ -351,6 +353,7 @@ def cnn_interpreter(model: nn.Module, train_loader: Any, target_layer: Any=None,
     # image = np.hstack((np.uint8(255 * img), cam, cam_image))
     
     ## attempt 2 ##
+    warnings.filterwarnings("ignore")
     img = img.view(1, 1, 224, 224)
     output = model(img)
 
@@ -365,10 +368,11 @@ def cnn_interpreter(model: nn.Module, train_loader: Any, target_layer: Any=None,
 
     # generate & save image
     overlay_np = np.hstack((
-        img.view(1, 224, 224).permute(2, 3, 1).cpu().numpy(),
+        cv2.cvtColor(img.view(1, 224, 224).permute(1, 2, 0).cpu().numpy(), cv2.COLOR_GRAY2RGB),
         image.permute(1, 2, 0).cpu().numpy()
     ))
     overlay_np = (overlay_np * 255).astype("uint8")
+    warnings.resetwarnings()
     
     save_image(overlay_np, f"{model.__class__.__name__}_interpretation")
     

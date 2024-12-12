@@ -4,7 +4,7 @@
         Ayush Tripathi(atripathi7783@gmail.com)
 '''
 
-#imports
+# imports
 import torch
 from tqdm import tqdm
 from PIL import Image
@@ -12,7 +12,7 @@ from torch.utils.data import Dataset, DataLoader, random_split
 from torchvision import transforms
 from pathlib import Path
 
-#model specific import
+# model specific import
 from src.etl.data_loading import LumbarSpineDataset
 from src.arch.interface import *
 from src.arch.cnn import *
@@ -144,7 +144,7 @@ def main():
     
     # initialize model
     hp = load_hyperparams()
-    hp["nepochs"] = 0
+    hp["nepochs"] = 1
     model_arch = "CNN"
     run_type = "trial"
     
