@@ -135,7 +135,7 @@ def validation(hyperparams: dict[str, Any], epoch_model: nn.Module, val_loader, 
     # return metrics
     return {
         "acc": correct / total,
-        "loss": sum_loss / len(trainer),
+        "loss": sum_loss / len(val_loader),
         "duration": time() - start_time
     }
 
