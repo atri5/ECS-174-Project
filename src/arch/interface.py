@@ -36,7 +36,7 @@ from src.utils.visualization import save_image
 NUM_INPUT_CHANNELS = 1
 NUM_OUTPUT_CLASSES = 3
 IMAGE_DIMS = (224, 224)
-DEVICE = "cuda" if torch.cuda.is_available else "mps"
+DEVICE = "cuda" if torch.cuda.is_available() else "mps"
 RAND_SEED = 17
 TTV_SPLIT = (0.7, 0.1, 0.2)
 
@@ -135,7 +135,7 @@ def validation(hyperparams: dict[str, Any], epoch_model: nn.Module, val_loader, 
     # return metrics
     return {
         "acc": correct / total,
-        "loss": sum_loss,
+        "loss": sum_loss / len(trainer),
         "duration": time() - start_time
     }
 
@@ -206,7 +206,7 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
             running_loss += loss.cpu().item()
             
         # update metrics
-        metrics["train_loss"].append(running_loss)
+        metrics["train_loss"].append(running_loss / len(train_loader))
         metrics["train_acc"].append(num_correct / num_samples)
         metrics["train_time"].append(time() - start_time)
         
