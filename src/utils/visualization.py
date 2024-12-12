@@ -15,6 +15,8 @@ import seaborn as sns
 import cv2
 from pathlib import Path
 
+SAVEDIR = Path().cwd() / "report" / "visuals"
+
 
 def save_image(img: np.ndarray, name: Path | str) -> None:
     """Saves an image.
@@ -46,9 +48,7 @@ def loss_visualization(training_loss, validation_loss, epochs, dir=""):
     sns.lineplot(data=df, x='Epoch', y='Loss', hue='Type', style='Type', markers=True)
     plt.title('Loss Visualization Over Epochs')
     
-    cur = os.getcwd()
-    file_path = os.path.join(cur, dir)
-    plt.savefig(file_path)
+    plt.savefig(SAVEDIR, dpi=400)
     plt.show()
 
 
@@ -98,6 +98,7 @@ def visualize_samples(dataset, class_names, samples_to_display=10):
         axes[i].set_title(f"Class: {class_names[label]}")
         axes[i].axis('off')
     
+    plt.savefig(SAVEDIR / "sample_dataset", dpi=400)
     plt.show()
 
 
@@ -110,9 +111,7 @@ def plot_train_metrics(metrics: dict, desc: str):
         desc (str): Description of model for saving in figs directory.
     """
     #create the save directory
-    save_dir = "./src/experiments/figs"
-    os.makedirs(save_dir, exist_ok=True)
-
+    os.makedirs(SAVEDIR, exist_ok=True)
 
     epochs = range(1, len(metrics["train_loss"]) + 1)
     plt.figure(figsize=(8, 6))
@@ -123,7 +122,7 @@ def plot_train_metrics(metrics: dict, desc: str):
     plt.ylabel("Loss")
     plt.legend()
     plt.grid(True)
-    plt.savefig(f"{save_dir}/{desc}_train_loss.png", dpi=300)
+    plt.savefig(SAVEDIR / f"{desc}_train_loss.png", dpi=400)
     plt.show()
 
     plt.figure(figsize=(8, 6))
@@ -134,7 +133,7 @@ def plot_train_metrics(metrics: dict, desc: str):
     plt.ylabel("Accuracy")
     plt.legend()
     plt.grid(True)
-    plt.savefig(f"{save_dir}/{desc}_train_accuracy.png", dpi=300)
+    plt.savefig(SAVEDIR / f"{desc}_train_loss.png", dpi=400)
     plt.show()
 
 if __name__ == "__main__":
