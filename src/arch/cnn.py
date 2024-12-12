@@ -77,7 +77,7 @@ class CNN(nn.Module, CVModel):
         """
         
         # wrap trainer call
-        trainer(self.hyperparams, self, train_loader, val_loader)
+        return trainer(self.hyperparams, self, train_loader, val_loader)
     
     def validate_model(self, loader: torch.utils.data.DataLoader) -> dict[str, Any]:
         """Validation on the CNN.
@@ -87,7 +87,7 @@ class CNN(nn.Module, CVModel):
         """
         
         # wrap validator call
-        validation(self.hyperparams, self, loader)
+        return validation(self.hyperparams, self, loader)
     
     def test_model(self, loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
         """Wrap the call to the tester function.
@@ -123,7 +123,7 @@ class CNN(nn.Module, CVModel):
         """
         
         # wraps saver method
-        saver(self.hyperparams, self, path)
+        return saver(self.hyperparams, self, path)
     
     def interpret(self, test_input: Any, **kwargs) -> None:
         """Inteprets the model by wrapping the CNN interpretation via Grad-Cam.
@@ -133,6 +133,6 @@ class CNN(nn.Module, CVModel):
         """
         
         # wrap call
-        cnn_interpreter(self, test_input)
+        return cnn_interpreter(self, test_input)
     
     

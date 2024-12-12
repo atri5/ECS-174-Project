@@ -88,6 +88,9 @@ class Pipeline(object):
         test_metrics = self.model.test_model(
             self.test_loader
         )
+        
+        print(train_metrics)
+        print(test_metrics)
 
         # plotting loss and accuracy on each epoch
 

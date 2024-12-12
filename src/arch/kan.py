@@ -93,7 +93,7 @@ class CKAN(nn.Module, CVModel):
         """
         
         # wrap trainer call
-        trainer(self.hyperparams, self, train_loader, val_loader, device="cpu")
+        return trainer(self.hyperparams, self, train_loader, val_loader, device="cpu")
     
     def validate_model(self, loader: torch.utils.data.DataLoader) -> dict[str, Any]:
         """Validation on the Conv KAN.
@@ -103,7 +103,7 @@ class CKAN(nn.Module, CVModel):
         """
         
         # wrap validator call
-        validation(self.hyperparams, self, loader, device="cpu")
+        return validation(self.hyperparams, self, loader, device="cpu")
     
     def test_model(self, loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
         """Wrap the call to the tester function.
@@ -139,7 +139,7 @@ class CKAN(nn.Module, CVModel):
         """
         
         # wraps saver method
-        saver(self.hyperparams, self, path)
+        return saver(self.hyperparams, self, path)
     
     def interpret(test_input: Any, **kwargs) -> None:
         pass

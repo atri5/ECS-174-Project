@@ -206,7 +206,8 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
             running_loss += loss.cpu().item()
             
         # update metrics
-        metrics["train_loss"].append(running_loss / len(train_loader))
+        running_loss /= len(train_loader)
+        metrics["train_loss"].append(running_loss)
         metrics["train_acc"].append(num_correct / num_samples)
         metrics["train_time"].append(time() - start_time)
         
