@@ -141,6 +141,13 @@ class CKAN(nn.Module, CVModel):
         # wraps saver method
         return saver(self.hyperparams, self, path)
     
-    def interpret(test_input: Any, **kwargs) -> None:
-        pass
+    def interpret(self, test_input: Any, **kwargs) -> None:
+        """Inteprets the model by wrapping the CNN interpretation via Grad-Cam.
+
+        Args:
+            test_input (Any): test-loader.
+        """
+        
+        # wrap call
+        return cnn_interpreter(self, test_input, target_layer=self.conv[-1])
 

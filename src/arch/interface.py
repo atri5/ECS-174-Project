@@ -13,14 +13,13 @@ import torch.functional as F
 import torch.optim as optim
 import numpy as np
 import cv2
-from pytorch_grad_cam import GradCAM
-from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
-from pytorch_grad_cam.utils.image import show_cam_on_image, \
-    deprocess_image, \
-    preprocess_image
-# from gradcam import GradCAM
-# from gradcam.utils import visualize_cam
-from PIL import Image
+# from pytorch_grad_cam import GradCAM
+# from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
+# from pytorch_grad_cam.utils.image import show_cam_on_image, \
+#     deprocess_image, \
+#     preprocess_image
+from gradcam import GradCAM
+from gradcam.utils import visualize_cam
 from tqdm import tqdm
 
 # built-in modules
@@ -321,13 +320,15 @@ def loader(path: Path | str, model_class: Any) -> nn.Module:
     # conclude
     print(f"Saved model to {weight_export_dir / path}, hyperparams to {hp_export_dir / path}")
 
-def cnn_interpreter(model: nn.Module, train_loader: Any, **kwargs) -> None:
+def cnn_interpreter(model: nn.Module, train_loader: Any, target_layer: Any=None, **kwargs) -> None:
     """Interprets CNN-based architectures via Grad-Cam.
 
     Args:
         model (nn.Module): model instance to interpret
         train_loader (Dataloader): image loader the model should be run on to 
             observe.
+        target_layer (Any): layer to use for interpretation; defaults to last 
+            layer in the `model.conv` block.
     """
 
     # ensure not autograd
@@ -338,39 +339,43 @@ def cnn_interpreter(model: nn.Module, train_loader: Any, **kwargs) -> None:
     data = next(iter(train_loader))
     img, label = data["image"][0].to(device), data["severity"][0].to(device).item()
 
-    # grab the target layers to analyze
-    target_layers = [model.conv]      # assume model has a conv backbone
-    targets = [ClassifierOutputTarget(label)]
-    img = img.cpu().numpy()
+    # ## attempt 1 ##
+    # # grab the target layers to analyze
+    # target_layers = [model.conv[-1]]      # assume model has a conv backbone
+    # targets = [ClassifierOutputTarget(label)]
+    # print(targets, img.shape)
     
-    print(targets, img.shape)
-    
-    # using gradcam we'll interpret
-    with GradCam(model=model, target_layers=target_layers) as cam:
-        grayscale_cams = cam(input_tensor=img, targets=targets)
-        cam_image = show_cam_on_image(img, grayscale_cams[0, :], use_rgb=True)
+    # # using gradcam we'll interpret
+    # with GradCAM(model=model, target_layers=target_layers) as cam:
+    #     grayscale_cams = cam(input_tensor=img, targets=targets)
+    #     cam_image = show_cam_on_image(img, grayscale_cams[0, :], use_rgb=True)
         
-    # showing the image
-    cam = np.uint8(255 * grayscale_cams[0, :])
-    cam = cv2.merge([cam, cam, cam])
-    image = np.hstack((np.uint8(255 * img), cam, cam_image))
+    # # showing the image
+    # cam = np.uint8(255 * grayscale_cams[0, :])
+    # cam = cv2.merge([cam, cam, cam])
+    # image = np.hstack((np.uint8(255 * img), cam, cam_image))
     
-    # ## attempt 2 ##
-    # img = img.view(1, 1, 224, 224)
-    # output = model(img)
+    ## attempt 2 ##
+    img = img.view(1, 1, 224, 224)
+    output = model(img)
 
-    # # build gradcam
-    # target_layer = model.conv
-    # gradcam = GradCAM(model, target_layer)
+    # build gradcam
+    target_layer = target_layer if target_layer is not None else model.conv[-1]
+    gradcam = GradCAM(model, target_layer)
 
-    # # generate visuals for this image & output class
-    # target_class = output.argmax(dim=1).item()
-    # mask, heatmap = gradcam(img, class_idx=target_class)
-    # print(target_class, label)
-    # image = visualize_cam(mask, img.squeeze(0).squeeze(0))
+    # generate visuals for this image & output class
+    target_class = output.argmax(dim=1).item()
+    mask, heatmap = gradcam(img, class_idx=target_class)
+    image = visualize_cam(mask, img.squeeze(0).squeeze(0))[1]
 
     # generate & save image
-    save_image(image, f"{model.__class__.__name__}_interpretation")
+    overlay_np = np.hstack((
+        img.view(1, 224, 224).permute(2, 3, 1).cpu().numpy(),
+        image.permute(1, 2, 0).cpu().numpy()
+    ))
+    overlay_np = (overlay_np * 255).astype("uint8")
+    
+    save_image(overlay_np, f"{model.__class__.__name__}_interpretation")
     
 
 # --- Interface --- #
