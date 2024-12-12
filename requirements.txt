@@ -6,3 +6,5 @@ torch
 torchvision
 Deep-Kan
 pydicom
+grad-cam
+opencv-python

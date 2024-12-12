@@ -141,6 +141,7 @@ def main():
     
     # initialize model
     hp = load_hyperparams()
+    hp["nepochs"] = 1
     model_arch = "CNN"
     run_type = "trial"
     
@@ -155,11 +156,15 @@ def main():
     model_class, model_descr = model_info[model_arch]
     
     # pipeline
-    res = Pipeline(
+    pipe = Pipeline(
         model_class=model_class, hyperparams=hp, 
         model_descr=f"{run_type}_{model_descr}", image_dir=img_dir,
         metadata_dir=data_dir
-    ).pipeline()
+    )
+    res = pipe.pipeline()
+    
+    # interpreter
+    pipe.model.interpret(pipe.test_loader)
 
 if __name__ == "__main__":
     main()

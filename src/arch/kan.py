@@ -141,6 +141,6 @@ class CKAN(nn.Module, CVModel):
         # wraps saver method
         saver(self.hyperparams, self, path)
     
-    def interpret_model(test_input: Any, **kwargs) -> None:
+    def interpret(test_input: Any, **kwargs) -> None:
         pass
 

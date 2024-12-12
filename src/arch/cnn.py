@@ -125,7 +125,14 @@ class CNN(nn.Module, CVModel):
         # wraps saver method
         saver(self.hyperparams, self, path)
     
-    def interpret_model(test_input: Any, **kwargs) -> None:
-        pass
+    def interpret(self, test_input: Any, **kwargs) -> None:
+        """Inteprets the model by wrapping the CNN interpretation via Grad-Cam.
+
+        Args:
+            test_input (Any): test-loader.
+        """
+        
+        # wrap call
+        cnn_interpreter(self, test_input)
     
     

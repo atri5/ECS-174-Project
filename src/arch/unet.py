@@ -137,7 +137,7 @@ class UNet(nn.Module, CVModel):
 
     def load(path: Path | str, model_class, **kwargs) -> None:
         pass    
-    def interpret_model(test_input, **kwargs):
+    def interpret(test_input, **kwargs):
         return super().interpret_model(**kwargs)
 
 def test():

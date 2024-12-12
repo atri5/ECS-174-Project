@@ -1,6 +1,7 @@
 '''
 @brief visualization metrics for use throughout processing stage.
-@author Ayush Tripathi (atripathi7783@gmail.com)
+@author Arjun Ashok (arjun3.ashok@gmail.com),
+        Ayush Tripathi (atripathi7783@gmail.com)
 
 '''
 
@@ -11,6 +12,23 @@ import os
 import csv
 import random
 import seaborn as sns
+import cv2
+from pathlib import Path
+
+
+def save_image(img: np.ndarray, name: Path | str) -> None:
+    """Saves an image.
+
+    Args:
+        img (np.ndarray): array-like
+        save_path (Path | str): name to save the image as
+    """
+
+    # save the image
+    output_path = Path().cwd() / "report" / "visuals" / f"{name}.png"
+    cv2.imwrite(output_path, img)
+    print(f"Saved visualization to \"{output_path.absolute()}\"")
+
 
 def loss_visualization(training_loss, validation_loss, epochs, dir=""):
     #input training loss, validation loss through arrays, specify directory + filename for saving config

@@ -12,6 +12,13 @@ import torch.nn as nn
 import torch.functional as F
 import torch.optim as optim
 import numpy as np
+import cv2
+from pytorch_grad_cam import GradCAM
+from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
+from pytorch_grad_cam.utils.image import show_cam_on_image, \
+    deprocess_image, \
+    preprocess_image
+from PIL import Image
 from tqdm import tqdm
 
 # built-in modules
@@ -22,7 +29,7 @@ from json import dump, load
 from time import time
 
 # internal modules
-## none for now...
+from src.utils.visualization import save_image
 
 
 # --- Constants --- #
@@ -311,6 +318,39 @@ def loader(path: Path | str, model_class: Any) -> nn.Module:
     # conclude
     print(f"Saved model to {weight_export_dir / path}, hyperparams to {hp_export_dir / path}")
 
+def cnn_interpreter(model: nn.Module, train_loader: Any) -> None:
+    """Interprets CNN-based architectures via Grad-Cam.
+
+    Args:
+        model (nn.Module): model instance to interpret
+        train_loader (Dataloader): image loader the model should be run on to 
+            observe.
+    """
+
+    # ensure not autograd
+    model.eval()
+    
+    # load in image to use
+    data = next(iter(train_loader))
+    img, label = data["image"], data["severity"]
+
+    # grab the target layers to analyze
+    target_layers = model.conv      # assume model has a conv backbone
+    
+    # using gradcam we'll interpret
+    with GradCAM(model=model, target_layers=target_layers) as cam:
+        grayscale_cams = cam(input_tensor=img, targets=label)
+        cam_image = show_cam_on_image(img, grayscale_cams[0, :], use_rgb=True)
+        
+    # showing the image
+    cam = np.uint8(255 * grayscale_cams[0, :])
+    cam = cv2.merge([cam, cam, cam])
+    image = np.hstack((np.uint8(255 * img), cam, cam_image))
+    
+    # show image
+    save_image(image, f"{model.__class__.__name__}_interpretation")
+    
+
 # --- Interface --- #
 class CVModel(metaclass = ABCMeta):
     # methods we expect to be overridden
@@ -320,22 +360,22 @@ class CVModel(metaclass = ABCMeta):
         pass
     
     @abstractmethod
-    def validate_model(loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
+    def validate_model(self, loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
         pass
     
     @abstractmethod
-    def test_model(loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
+    def test_model(self, loader: torch.utils.data.DataLoader, **kwargs) -> dict[str, Any]:
         pass
     
     @abstractmethod
-    def predict(loader: torch.utils.data.DataLoader, **kwargs) -> torch.Tensor:
+    def predict(self, loader: torch.utils.data.DataLoader, **kwargs) -> torch.Tensor:
         pass
     
     @abstractmethod
-    def save(path: Path | str, **kwargs) -> None:
+    def save(self, path: Path | str, **kwargs) -> None:
         pass
     
     @abstractmethod
-    def interpret_model(test_input: Any, **kwargs) -> Any:
+    def interpret(self, test_input: torch.utils.data.DataLoader, **kwargs) -> None:
         pass
 
