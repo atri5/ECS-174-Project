@@ -333,7 +333,7 @@ def cnn_interpreter(model: nn.Module, train_loader: Any) -> None:
     
     # load in image to use
     data = next(iter(train_loader))
-    img, label = data["image"], data["severity"]
+    img, label = [data["image"]], [data["severity"]]
 
     # grab the target layers to analyze
     target_layers = model.conv      # assume model has a conv backbone

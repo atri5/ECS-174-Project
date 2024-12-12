@@ -144,8 +144,7 @@ def main():
     
     # initialize model
     hp = load_hyperparams()
-    hp["nepochs"] = 1
-    model_arch = "CNN"
+    model_arch = "CKAN"
     run_type = "trial"
     
     # model descriptions
