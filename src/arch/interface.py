@@ -208,7 +208,7 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
         # update metrics
         running_loss /= len(train_loader)
         metrics["train_loss"].append(running_loss)
-        metrics["train_acc"].append(num_correct / num_samples)
+        metrics["train_acc"].append((num_correct / num_samples).item())
         metrics["train_time"].append(time() - start_time)
         
         val_metrics = validation(hyperparams, model, val_loader)
