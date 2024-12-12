@@ -15,26 +15,28 @@ from pathlib import Path
 #model specific import
 from src.etl.data_loading import LumbarSpineDataset
 from src.arch.interface import *
-from src.arch.unet import *
 from src.arch.cnn import *
 from src.arch.mcnn import *
+from src.arch.unet import *
+from src.arch.resnet import *
+from src.arch.transformer import *
 from src.arch.kan import *
 from src.utils.visualization import *
 
-
-# Helper Methods
-def load_model(self, input_channels = 1, output_classes = 3, ):
-    model = UNet(NUM_INPUT_CHANNELS, NUM_OUTPUT_CLASSES)
-    return model
 
 # Framework
 class Pipeline(object):
     def __init__(self, model_class: CVModel, hyperparams: dict[str, Any], 
                  model_descr: str, image_dir: Path | str,
                  metadata_dir: Path | str):
+        # CKAN can only run on cpu
         self.device = DEVICE if model_class != CKAN else "cpu"
+        
+        # buildup the model
         self.model = model_class(hyperparams).to(self.device)
         self.hyperparams = hyperparams
+        
+        # meta data
         self.model_descr = model_descr
         self.image_dir = image_dir
         self.data_dir = metadata_dir
@@ -122,7 +124,7 @@ class Pipeline(object):
         if not metrics_path.exists():
             metrics_path.mkdir()
         
-        with open(metrics_path / self.model_descr, "w") as f:
+        with open(metrics_path / f"{self.model_descr}.json", "w") as f:
             dump(metrics, f, indent=4)
             
         return metrics
@@ -139,12 +141,24 @@ def main():
     
     # initialize model
     hp = load_hyperparams()
-    model_class = CKAN
+    model_arch = "CNN"
+    run_type = "trial"
+    
+    # model descriptions
+    model_info = {
+        "CNN": (CNN, "baseline_CNN"),
+        "MCNN": (MCNN, "modified_CNN"),
+        "ResNet": (ResNet, "simple_ResNet18"),
+        "VIT": (VisionTransformerWithCoordinates, "vis_transformer"),
+        "CKAN": (CKAN, "conv_KAN")
+    }
+    model_class, model_descr = model_info[model_arch]
     
     # pipeline
     res = Pipeline(
-        model_class=model_class, hyperparams=hp, model_descr=f"trial_ckan",
-        image_dir=img_dir, metadata_dir=data_dir
+        model_class=model_class, hyperparams=hp, 
+        model_descr=f"{run_type}_{model_descr}", image_dir=img_dir,
+        metadata_dir=data_dir
     ).pipeline()
 
 if __name__ == "__main__":

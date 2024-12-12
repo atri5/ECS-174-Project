@@ -119,7 +119,7 @@ def validation(hyperparams: dict[str, Any], epoch_model: nn.Module, val_loader, 
             # generate predictions
             outputs = epoch_model(images)
             _, predicted = torch.max(outputs.data, 1)
-            sum_loss += val_criterion(outputs, labels).detach()
+            sum_loss += val_criterion(outputs, labels).float().cpu().item()
             
             # compute accuracy
             total += labels.size(0)
@@ -216,7 +216,7 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
         
         # early stopping
         early_stopper += 1
-        if val_metrics["loss"].item() < early_stop_loss:
+        if val_metrics["loss"] < early_stop_loss:
             early_stopper = 1
             early_stop_loss = metrics["val_loss"]
             
@@ -276,7 +276,7 @@ def saver(hyperparams: dict[str, Any], model: nn.Module, path: Path | str) -> No
 
     # save the hyperparams
     str_hp = {k: str(v) for k, v in hyperparams.items()}
-    with open(hp_export_dir / path, "w") as f:
+    with open(hp_export_dir / f"{path}.json", "w") as f:
         dump(str_hp, f, indent=4)
 
     # conclude
