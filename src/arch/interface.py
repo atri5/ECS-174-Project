@@ -13,11 +13,13 @@ import torch.functional as F
 import torch.optim as optim
 import numpy as np
 import cv2
-from pytorch_grad_cam import GradCAM
-from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
-from pytorch_grad_cam.utils.image import show_cam_on_image, \
-    deprocess_image, \
-    preprocess_image
+# from pytorch_grad_cam import GradCAM, EigenCam
+# from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
+# from pytorch_grad_cam.utils.image import show_cam_on_image, \
+#     deprocess_image, \
+#     preprocess_image
+from gradcam import GradCAM
+from gradcam.utils import visualize_cam
 from PIL import Image
 from tqdm import tqdm
 
@@ -319,7 +321,7 @@ def loader(path: Path | str, model_class: Any) -> nn.Module:
     # conclude
     print(f"Saved model to {weight_export_dir / path}, hyperparams to {hp_export_dir / path}")
 
-def cnn_interpreter(model: nn.Module, train_loader: Any) -> None:
+def cnn_interpreter(model: nn.Module, train_loader: Any, **kwargs) -> None:
     """Interprets CNN-based architectures via Grad-Cam.
 
     Args:
@@ -329,26 +331,45 @@ def cnn_interpreter(model: nn.Module, train_loader: Any) -> None:
     """
 
     # ensure not autograd
+    device = kwargs.get("device", DEVICE)
     model.eval()
     
     # load in image to use
     data = next(iter(train_loader))
-    img, label = [data["image"]], [data["severity"]]
+    img, label = data["image"][0].to(device), data["severity"][0].to(device).item()
 
-    # grab the target layers to analyze
-    target_layers = model.conv      # assume model has a conv backbone
+    # # grab the target layers to analyze
+    # target_layers = [model.conv]      # assume model has a conv backbone
+    # targets = [ClassifierOutputTarget(label)]
+    # img = preprocess_image(img.numpy())
     
-    # using gradcam we'll interpret
-    with GradCAM(model=model, target_layers=target_layers) as cam:
-        grayscale_cams = cam(input_tensor=img, targets=label)
-        cam_image = show_cam_on_image(img, grayscale_cams[0, :], use_rgb=True)
+    # print(targets, img.shape)
+    
+    # # using gradcam we'll interpret
+    # with EigenCam(model=model, target_layers=target_layers) as cam:
+    #     grayscale_cams = cam(input_tensor=img, targets=targets)
+    #     cam_image = show_cam_on_image(img, grayscale_cams[0, :], use_rgb=True)
         
-    # showing the image
-    cam = np.uint8(255 * grayscale_cams[0, :])
-    cam = cv2.merge([cam, cam, cam])
-    image = np.hstack((np.uint8(255 * img), cam, cam_image))
+    # # showing the image
+    # cam = np.uint8(255 * grayscale_cams[0, :])
+    # cam = cv2.merge([cam, cam, cam])
+    # image = np.hstack((np.uint8(255 * img), cam, cam_image))
     
-    # show image
+    ## attempt 2 ##
+    img = img.view(1, 1, 224, 224)
+    output = model(img)
+
+    # build gradcam
+    target_layer = model.conv
+    gradcam = GradCAM(model, target_layer)
+
+    # generate visuals for this image & output class
+    target_class = output.argmax(dim=1).item()
+    mask, heatmap = gradcam(img, class_idx=target_class)
+    print(target_class, label)
+
+    # generate & save image
+    image = visualize_cam(mask, img.squeeze(0).squeeze(0))
     save_image(image, f"{model.__class__.__name__}_interpretation")
     
 

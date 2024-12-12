@@ -144,7 +144,8 @@ def main():
     
     # initialize model
     hp = load_hyperparams()
-    model_arch = "CKAN"
+    hp["nepochs"] = 0
+    model_arch = "CNN"
     run_type = "trial"
     
     # model descriptions
@@ -166,7 +167,8 @@ def main():
     res = pipe.pipeline()
     
     # interpreter
-    pipe.model.interpret(pipe.test_loader)
+    if model_arch == "CNN":
+        pipe.model.interpret(pipe.test_loader)
 
 if __name__ == "__main__":
     main()
