@@ -218,7 +218,7 @@ def trainer(hyperparams: dict[str, Any], model: nn.Module, train_loader, val_loa
         early_stopper += 1
         if val_metrics["loss"] < early_stop_loss:
             early_stopper = 1
-            early_stop_loss = metrics["val_loss"]
+            early_stop_loss = val_metrics["val_loss"]
             
             # save the weights as a checkpoint
             checkpoint_path = f"checkpt_{model.__class__.__name__}"
