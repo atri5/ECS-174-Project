@@ -2,6 +2,9 @@
 @brief U-Net architecture and double convolution class 
 @author Ayush Tripathi (atripathi7783@gmail.com)
 
+Note: Runs and completes the task but is too computationally expensive for classification through the necessary average pooling layer, 
+prompting focus on pure classification models instead.
+
 """
 
 
