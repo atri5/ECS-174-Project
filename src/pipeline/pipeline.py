@@ -7,6 +7,7 @@
 # imports
 import torch
 from tqdm import tqdm
+from PIL import Image
 from torch.utils.data import Dataset, DataLoader, random_split
 from torchvision import transforms
 from pathlib import Path
@@ -23,7 +24,7 @@ from src.arch.kan import *
 from src.utils.visualization import *
 
 WEIGHTSDIR = Path().cwd() / "model-weights" 
-
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Framework
 class Pipeline(object):
     def __init__(self, model_class: CVModel, hyperparams: dict[str, Any], 
@@ -132,24 +133,24 @@ class Pipeline(object):
             
         return metrics
         
-        # TODO @Ayush: visualizations
         
 
-def interpret_loaded_model(pipe: Pipeline, model_class):
-    """Wrapper for interpreting a model with saved weights.
-    """
+def interpret_loaded_model(pipe: Pipeline,  model_descr, model_class, model_arch):
+    '''
+    Purpose: Loads and interprets a complete model.
+
+    Args: all passed through initialization in main.
+
+    '''
     
-    # load data
     pipe.init_dataloader()
-    
-    # setup info for loading the model
-    model_arch = f"final_{model_class.__class__.__name__}"
     device = "cpu" if model_arch == "CKAN" else DEVICE
-    
-    # load & interpret
-    loaded_model = loader(pipe.model_descr, model_class)
+    #pick the correct file for hyperparams
+    # C:\Users\atrip\Classes\ECS-174-Project\model-weights\checkpt_CNN
+    file_path = os.path.join(WEIGHTSDIR, model_descr)
+    loaded_model = loader(model_descr, model_class)
     loaded_model = loaded_model.to(device)
-    loaded_model.interpret(pipe.test_loader, device=device)
+    loaded_model.interpret(pipe.test_loader)
 
 # Testing
 def main():
@@ -158,15 +159,15 @@ def main():
     preloaded = True
 
     # collect directories
-    data_dir = Path().cwd() / "data"
-    img_dir = data_dir / "train_images"
+    data_dir = r"C:\Users\atrip\Classes\ECS-174-Project\src\dataset\rsna-2024-lumbar-spine-degenerative-classification"
+    img_dir = r"C:\Users\atrip\Classes\ECS-174-Project\src\dataset\rsna-2024-lumbar-spine-degenerative-classification\train_images"
 
     
     # initialize model
     hp = load_hyperparams()
     hp["nepochs"] = 1
-    model_arch = "CNN"
-    run_type = "trial"
+    model_arch = "CKAN"
+    run_type = "final"
     
     # model descriptions
     model_info = {
@@ -191,7 +192,8 @@ def main():
         res = pipe.pipeline()
         pipe.model.interpret(pipe.test_loader)
     else:
-        interpret_loaded_model(pipe, model_class)
+        
+        interpret_loaded_model(pipe, "checkpt_CKAN", model_class, model_arch)
 
 if __name__ == "__main__":
     main()
