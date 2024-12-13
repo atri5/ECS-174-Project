@@ -177,9 +177,9 @@ def test_tabular():
         
         row = {
             "Model": model_name,
-            "Accuracy": metrics.get("acc", None),
-            "Loss": metrics.get("loss", None),
-            "Duration": metrics.get("duration", None)
+            "Accuracy": round(metrics.get("acc", None),3),
+            "Loss": round(metrics.get("loss", None),3),
+            "Duration": round(metrics.get("duration", None),3)
         }
 
         rows.append(row)
