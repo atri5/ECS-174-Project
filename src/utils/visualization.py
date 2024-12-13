@@ -250,6 +250,7 @@ if __name__ == "__main__":
     # --- Generate Time Graphs --- #
     train_time_plot()
 
+    # --- Generate Table for Test Metrics --- #
     test_tabular()
     
     
