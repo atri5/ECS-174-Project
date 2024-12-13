@@ -13,89 +13,14 @@ import csv
 import random
 import seaborn as sns
 import cv2
-import torch
 from pathlib import Path
-from torchvision.utils import make_grid
+import json
 
-RAND_SEED = 17
-from src.etl.data_loading import *
 
 SAVEDIR = Path().cwd() / "report" / "visuals"
+JSONDIR = Path().cwd() / "model-reports"
+WEIGHTSDIR = Path().cwd() / "model-weights" 
 
-
-def visualize_dataloader_samples(dataloader, model: torch.nn.Module=None, num_images: int=16):
-    """Visualize a grid of images from a DataLoader along with their output labels.
-    
-    Parameters:
-        dataloader (torch.utils.data.DataLoader): The DataLoader containing the 
-            dataset.
-        model (torch.nn.Module, optional): The trained model to generate output 
-            labels. Defaults to None.
-        num_images (int): The number of images to visualize in the grid.
-    """
-
-    # grab batch
-    data = next(iter(dataloader))
-    images, labels = data["image"], data["severity"]
-    
-    # limit to max number of images
-    images = images[:num_images]
-    labels = labels[:num_images]
-    label_names = ["Normal/Mild", "Moderate", "Severe"]
-    
-    # build based on model preds if possible
-    if model is not None:
-        model.eval()
-        with torch.no_grad():
-            outputs = model(images)
-            predicted_labels = torch.argmax(outputs, dim=1)
-    else:
-        predicted_labels = labels  # Use ground-truth labels if no model is provided
-
-    labels = list(map(lambda x: label_names[x], labels))
-    predicted_labels = predicted_labels.tolist()
-    predicted_labels = list(map(lambda x: label_names[x], predicted_labels))
-
-    # grid plotting
-    fig, axes = plt.subplots(4, 4, figsize=(10, 10))
-    grid = make_grid(images, nrow=4, normalize=True, value_range=(0, 1))
-    axes = axes.flatten()
-    
-    for idx, ax in enumerate(axes):
-        if idx < len(images):
-            image = images[idx].permute(1, 2, 0).cpu().numpy()
-            ax.imshow(image, cmap='gray' if images.shape[1] == 1 else None)
-            
-            label = f"True: {labels[idx]}"
-            if model is not None:
-                label += f" | Pred: {predicted_labels[idx]}"
-            ax.set_title(label, fontsize=8)
-        
-        ax.axis('off')
-    
-    # plotting & saving
-    plt.tight_layout()
-    plt.savefig(SAVEDIR / f"dataset_sample_{'no_preds' if model is None else 'preds'}", dpi=400)
-
-def _load_dataloader(image_dir, data_dir):
-    """Hardcoded loading for vis.
-    """
-    
-    torch.manual_seed(RAND_SEED)
-    batch_size = 32
-
-    transform = transforms.Compose([ 
-        transforms.Resize((224,224)),
-        transforms.ToTensor(),
-        # transforms.Normalize((0.5), (0.5))
-    ])
-    dataset = LumbarSpineDataset(
-        image_dir=image_dir, metadata_dir=data_dir,
-        transform=transform, load_fraction=0.05
-    )
-    
-    # create loader
-    return DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 def save_image(img: np.ndarray, name: Path | str) -> None:
     """Saves an image.
@@ -109,6 +34,7 @@ def save_image(img: np.ndarray, name: Path | str) -> None:
     output_path = Path().cwd() / "report" / "visuals" / f"{name}.png"
     cv2.imwrite(output_path, img)
     print(f"Saved visualization to \"{output_path.absolute()}\"")
+
 
 def loss_visualization(training_loss, validation_loss, epochs, dir=""):
     #input training loss, validation loss through arrays, specify directory + filename for saving config
@@ -129,6 +55,9 @@ def loss_visualization(training_loss, validation_loss, epochs, dir=""):
     plt.savefig(SAVEDIR, dpi=400)
     plt.show()
 
+
+
+
 def log_metrics(metrics, epoch, logs_file = "metrics.csv"):
     '''
     purpose:
@@ -148,6 +77,7 @@ def log_metrics(metrics, epoch, logs_file = "metrics.csv"):
             writer.writerow(['Epoch'] + list(metrics.keys()))  
         writer.writerow([epoch] + list(metrics.values()))
     print(f"Metrics logged for epoch {epoch}: {metrics}")
+
 
 def visualize_samples(dataset, class_names, samples_to_display=10):
     '''
@@ -175,6 +105,7 @@ def visualize_samples(dataset, class_names, samples_to_display=10):
     plt.savefig(SAVEDIR / "sample_dataset", dpi=400)
     plt.show()
 
+
 def plot_train_metrics(metrics: dict, desc: str):
     """
     Plot training and validation loss and accuracy.
@@ -196,7 +127,6 @@ def plot_train_metrics(metrics: dict, desc: str):
     plt.legend()
     plt.grid(True)
     plt.savefig(SAVEDIR / f"{desc}_train_loss.png", dpi=400)
-    plt.show()
 
     plt.figure(figsize=(8, 6))
     plt.plot(epochs, metrics["train_acc"], label="Train Accuracy", marker='o')
@@ -207,18 +137,59 @@ def plot_train_metrics(metrics: dict, desc: str):
     plt.legend()
     plt.grid(True)
     plt.savefig(SAVEDIR / f"{desc}_train_accuracy.png", dpi=400)
+
+
+
+def train_time_plot():
+    '''
+    Purpose: grabs jsons of all relevant trial times of models, compiles and graphs. Stores in ./report/visuals.
+
+    Args: None
+    '''
+
+    #section 1: grabbing training times for plotting use
+    training_times = {}
+    for filename in os.listdir(JSONDIR):
+        if filename.endswith(".json"):
+            file_path = os.path.join(JSONDIR, filename)
+            with open(file_path, "r") as file:
+                try:
+                    data = json.load(file)
+                    if "train" in data and "train_time" in data["train"]:
+                        train_times = data["train"]["train_time"]  # Extract list of train times
+                        model_name = filename.replace(".json", "")
+                        training_times[model_name] = train_times
+                    else:
+                        print(f"'train' or 'train_time' key missing in: {file_path}")
+                except json.JSONDecodeError:
+                    print(f"Error decoding JSON in file: {filename}")
+
+    for key in training_times.keys():
+        epoch_times = training_times[key]  
+        epochs = range(1, len(epoch_times) + 1)  
+        plt.plot(epochs, epoch_times, label=key) 
+        
+    # Add plot details
+    plt.xlabel("Epoch")
+    plt.ylabel("Training Time (s)")
+    plt.title("Training Time Per Epoch for Models")
+    plt.legend(title="Models")
+    plt.grid(True)
+    plt.tight_layout()
+
+    # Save or show the plot
+    plt.savefig("./report/visuals/training_times_per_epoch.png")  # Save to ./report/visuals
     plt.show()
 
+
+
 if __name__ == "__main__":
-    # metrics = metrics = {
-    # "train_loss": [0.8, 0.6, 0.4, 0.35],
-    # "train_acc": [0.6, 0.75, 0.85, 0.9],
-    # "val_loss": [0.9, 0.7, 0.5, 0.4],
-    # "val_acc": [0.55, 0.7, 0.8, 0.85]
-    # }
-    # plot_train_metrics(metrics, "unet-model")
+    #main pipeline, run once all model training is complete. 
+
+    # --- Generate Time Graphs --- #
+    train_time_plot()
     
-    data_dir = Path().cwd() / "data"
-    img_dir = data_dir / "train_images"
-    data = _load_dataloader(img_dir, data_dir)
-    visualize_dataloader_samples(data)
+    
+    
+
+        
