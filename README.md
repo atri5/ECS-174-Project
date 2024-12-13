@@ -1,4 +1,4 @@
-# ECS 174: Deep Learning for Lumbar Classification
+# ECS 174 Project: Deep Learning for Lumbar Classification
 @authors Arjun Ashok (arjun3.ashok@gmail.com, arjashok@ucdavis.edu), Zhian Li,
 Ayush Tripathi(atripathi7783@gmail.com, atripathi@ucdavis.edu)
 
