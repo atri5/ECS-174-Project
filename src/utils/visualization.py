@@ -4,7 +4,7 @@
         Ayush Tripathi (atripathi7783@gmail.com)
 
 '''
-
+#imports
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -14,15 +14,19 @@ import random
 import seaborn as sns
 import cv2
 import json
-import random
-import seaborn as sns
-import cv2
 import torch
 from pathlib import Path
 from torchvision.utils import make_grid
+from tqdm import tqdm
+from PIL import Image
+from torch.utils.data import Dataset, DataLoader, random_split
+from torchvision import transforms
+
+
+
+
 
 from src.etl.data_loading import *
-
 RAND_SEED = 17
 SAVEDIR = Path().cwd() / "report" / "visuals"
 JSONDIR = Path().cwd() / "model-reports"
@@ -81,8 +85,9 @@ def visualize_dataloader_samples(dataloader, model: torch.nn.Module=None, num_im
         SAVEDIR / f"dataset_sample_{'no_preds' if model is None else 'preds'}",
         dpi=400
     )
+    print(f"saved to { SAVEDIR / f"dataset_sample_{'no_preds' if model is None else 'preds'}"}")
     
-def _load_dataloader(image_dir, data_dir):
+def load_dataloader(image_dir, data_dir):
     """Hardcoded loading for vis.
     """
     
@@ -348,10 +353,12 @@ if __name__ == "__main__":
     #main pipeline, run once all model training is complete. 
 
     # --- Generate Time Graphs --- #
-    # train_time_plot()
+    train_time_plot()
 
     # --- Generate Table for Test Metrics --- #
     test_tabular()
+
+
     
     
     

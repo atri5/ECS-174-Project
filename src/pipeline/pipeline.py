@@ -136,25 +136,44 @@ class Pipeline(object):
         
 
 def interpret_loaded_model(pipe: Pipeline,  model_descr, model_class, model_arch):
-    """Wrapper for interpreting a model with saved weights.
-    """
+    '''
+    Purpose: Loads and interprets a complete model.
 
-    # load data
+    Args: all passed through initialization in main.
+
+    '''
+    
     pipe.init_dataloader()
-    
-    # setup info for loading the model
     device = "cpu" if model_arch == "CKAN" else DEVICE
-    
-    # load & interpret
+    #pick the correct file for hyperparams
+    # C:\Users\atrip\Classes\ECS-174-Project\model-weights\checkpt_CNN
+    file_path = os.path.join(WEIGHTSDIR, model_descr)
     loaded_model = loader(model_descr, model_class)
     loaded_model = loaded_model.to(device)
-    loaded_model.interpret(model_descr, device=device)
+    loaded_model.interpret(pipe.test_loader)
+
+def wrap_sample_vis(pipe: Pipeline,  model_descr, model_class, model_arch, dl ):
+    pipe.init_dataloader()
+    device = "cpu"
+    #pick the correct file for hyperparams
+    # C:\Users\atrip\Classes\ECS-174-Project\model-weights\checkpt_CNN
+    file_path = os.path.join(WEIGHTSDIR, model_descr)
+    loaded_model = loader(model_descr, model_class)
+    loaded_model = loaded_model.to(device)
+    visualize_dataloader_samples(dataloader=dl,model = loaded_model)
 
 # Testing
 def main():
 
-    #if preloaded, set to True
-    preloaded = True
+    '''
+    Settings:
+
+    0: Initializes and runs the pipeline of the model
+    1: Interprets a pre-loaded model.
+    2: Loads and generates sample visuals
+
+    '''
+    setting = 2
 
     # collect directories
     data_dir = r"C:\Users\atrip\Classes\ECS-174-Project\src\dataset\rsna-2024-lumbar-spine-degenerative-classification"
@@ -186,12 +205,16 @@ def main():
     )
 
     # running model / interpreting model
-    if not preloaded:
-        res = pipe.pipeline()
-        pipe.model.interpret(pipe.test_loader)
-    else:
-        
-        interpret_loaded_model(pipe, "checkpt_CKAN", model_class, model_arch)
+    match setting:
+        case 0:
+            res = pipe.pipeline()
+            pipe.model.interpret(pipe.test_loader)
+        case 1:
+            interpret_loaded_model(pipe, "checkpt_ResNet", model_class, model_arch)
+        case 2:
+            #use only CKAN for examples, best model out of the lot
+            dl = load_dataloader(img_dir, data_dir)
+            wrap_sample_vis(pipe, "checkpt_CKAN", model_class, model_arch, dl=dl)
 
 if __name__ == "__main__":
     main()
