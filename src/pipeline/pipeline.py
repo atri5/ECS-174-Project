@@ -188,7 +188,7 @@ def main():
         metadata_dir=data_dir
     )
 
-    # model interpretation
+    # running model / interpreting model
     if not preloaded:
         res = pipe.pipeline()
         pipe.model.interpret(pipe.test_loader)
