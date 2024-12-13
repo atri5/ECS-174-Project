@@ -23,6 +23,8 @@ from src.arch.transformer import *
 from src.arch.kan import *
 from src.utils.visualization import *
 
+WEIGHTSDIR = Path().cwd() / "model-weights" 
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Framework
 class Pipeline(object):
@@ -139,13 +141,14 @@ class Pipeline(object):
 # Testing
 def main():
     # collect directories
-    data_dir = Path().cwd() / "data"
-    img_dir = data_dir / "train_images"
+    data_dir = r"C:\Users\atrip\Classes\ECS-174-Project\src\dataset\rsna-2024-lumbar-spine-degenerative-classification"
+    img_dir = r"C:\Users\atrip\Classes\ECS-174-Project\src\dataset\rsna-2024-lumbar-spine-degenerative-classification\train_images"
+
     
     # initialize model
     hp = load_hyperparams()
     hp["nepochs"] = 1
-    model_arch = "CNN"
+    model_arch = "ResNet"
     run_type = "trial"
     
     # model descriptions
@@ -164,12 +167,25 @@ def main():
         model_descr=f"{run_type}_{model_descr}", image_dir=img_dir,
         metadata_dir=data_dir
     )
-    res = pipe.pipeline()
+    # res = pipe.pipeline()
     
     # interpreter
-    if model_arch == "CNN":
-        pipe.model.interpret(pipe.test_loader)
+    # if model_arch == "CNN":
+    #     pipe.model.interpret(pipe.test_loader)
+
+    #Use if loading model:
+    pipe.init_dataloader()
+
+    #pick the correct file for hyperparams
+    weights_name = "final_simple_ResNet"
+    # C:\Users\atrip\Classes\ECS-174-Project\model-weights\checkpt_CNN
+    file_path = os.path.join(WEIGHTSDIR, weights_name)
+    loaded_model = loader(weights_name, model_class)
+    loaded_model = loaded_model.to(DEVICE)
+    loaded_model.interpret(pipe.test_loader)
 
 if __name__ == "__main__":
     main()
     
+
+
