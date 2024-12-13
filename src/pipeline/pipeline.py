@@ -7,7 +7,6 @@
 # imports
 import torch
 from tqdm import tqdm
-from PIL import Image
 from torch.utils.data import Dataset, DataLoader, random_split
 from torchvision import transforms
 from pathlib import Path
@@ -24,7 +23,7 @@ from src.arch.kan import *
 from src.utils.visualization import *
 
 WEIGHTSDIR = Path().cwd() / "model-weights" 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 # Framework
 class Pipeline(object):
     def __init__(self, model_class: CVModel, hyperparams: dict[str, Any], 
@@ -136,38 +135,37 @@ class Pipeline(object):
         # TODO @Ayush: visualizations
         
 
-def interpret_loaded_model(pipe: Pipeline,  model_descr, model_class, model_arch):
-    '''
-    Purpose: Loads and interprets a complete model.
-
-    Args: all passed through initialization in main.
-
-    '''
+def interpret_loaded_model(pipe: Pipeline, model_class):
+    """Wrapper for interpreting a model with saved weights.
+    """
     
     pipe.init_dataloader()
+    model_arch = f"final_{model_class.__class__.__name__}"
     device = "cpu" if model_arch == "CKAN" else DEVICE
+    
+    print(device)
     #pick the correct file for hyperparams
     # C:\Users\atrip\Classes\ECS-174-Project\model-weights\checkpt_CNN
-    file_path = os.path.join(WEIGHTSDIR, model_descr)
-    loaded_model = loader(model_descr, model_class)
+    
+    loaded_model = loader(pipe.model_descr, model_class)
     loaded_model = loaded_model.to(device)
-    loaded_model.interpret(pipe.test_loader)
+    loaded_model.interpret(pipe.test_loader, device=device)
 
 # Testing
 def main():
 
     #if preloaded, set to True
-    preloaded = False
+    preloaded = True
 
     # collect directories
-    data_dir = r"C:\Users\atrip\Classes\ECS-174-Project\src\dataset\rsna-2024-lumbar-spine-degenerative-classification"
-    img_dir = r"C:\Users\atrip\Classes\ECS-174-Project\src\dataset\rsna-2024-lumbar-spine-degenerative-classification\train_images"
+    data_dir = Path().cwd() / "data"
+    img_dir = data_dir / "train_images"
 
     
     # initialize model
     hp = load_hyperparams()
     hp["nepochs"] = 1
-    model_arch = "CKAN"
+    model_arch = "CNN"
     run_type = "trial"
     
     # model descriptions
@@ -193,7 +191,7 @@ def main():
         res = pipe.pipeline()
         pipe.model.interpret(pipe.test_loader)
     else:
-        interpret_loaded_model(pipe, model_descr, model_class, model_arch)
+        interpret_loaded_model(pipe, model_class)
 
 if __name__ == "__main__":
     main()

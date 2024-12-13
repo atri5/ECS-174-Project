@@ -14,7 +14,6 @@ import random
 import seaborn as sns
 import cv2
 import json
-import plotly.graph_objects as go
 import random
 import seaborn as sns
 import cv2

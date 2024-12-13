@@ -335,11 +335,6 @@ def cnn_interpreter(model: nn.Module, train_loader: Any, target_layer: Any=None,
 
     # ensure not autograd
     device = kwargs.get("device", DEVICE)
-
-    #check for CKAN
-    if (type(model == 'src.arch.kan.CKAN')):
-        device = "cpu"
-    
     model.eval()
     
     # load in image to use
