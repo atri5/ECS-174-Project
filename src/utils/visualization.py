@@ -294,16 +294,33 @@ def train_time_plot():
                 except json.JSONDecodeError:
                     print(f"Error decoding JSON in file: {filename}")
 
+    #lambda to check if simpler name exists
+    model_search = lambda name, model_name: model_name.lower() in name or model_name in name
+    rename_training_times = {}
 
+    for model_name, metrics in training_times.items():
+        model_types = ["ResNet", "modified_CNN", "CNN", "KAN", "VIT", ]
+        for model in model_types:
+            print(f'search {model_name}, {model}')
+            if model_search(model_name, model):  # Check if the model type exists
+                if model == "modified_CNN":
+                    print("yes")
+                    model = "MCNN"
+                # If the model type is already in the dictionary, skip adding again
+                if model not in rename_training_times:
+                    rename_training_times[model] = metrics  # Use simplified name
+                break  # Exit the loop once a match is found
+    print(rename_training_times.keys())
     # compute average times
-    for key in training_times.keys():
-        epoch_time = sum(training_times[key]) / len(training_times[key])
-        training_times[key] = epoch_time
+    for key in rename_training_times.keys():
+        epoch_time = sum(rename_training_times[key]) / len(rename_training_times[key])
+        rename_training_times[key] = epoch_time
+        
         
     # plot the bar chart
     df = pd.DataFrame({
-        "Model Arch": list(training_times.keys()),
-        "Avg Compute Time": list(training_times.values())
+        "Model Arch": list(rename_training_times.keys()),
+        "Avg Compute Time": list(rename_training_times.values())
     })
     sns.barplot(data=df, x="Model Arch", y="Avg Compute Time", palette="viridis")
         
@@ -311,8 +328,7 @@ def train_time_plot():
     plt.xlabel("Epoch")
     plt.ylabel("Training Time (s)")
     plt.title("Training Time Per Epoch for Models")
-    plt.legend(title="Models")
-    plt.grid(True)
+    plt.grid(False)
     plt.tight_layout()
 
     # save plot to path
