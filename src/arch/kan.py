@@ -149,5 +149,5 @@ class CKAN(nn.Module, CVModel):
         """
         
         # wrap call
-        return cnn_interpreter(self, test_input, target_layer=self.conv[-1])
+        return cnn_interpreter(self, test_input, target_layer=self.conv[-1], ckan_instance=True)
 
