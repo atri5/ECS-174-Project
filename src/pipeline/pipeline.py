@@ -136,21 +136,19 @@ class Pipeline(object):
         
 
 def interpret_loaded_model(pipe: Pipeline,  model_descr, model_class, model_arch):
-    '''
-    Purpose: Loads and interprets a complete model.
+    """Wrapper for interpreting a model with saved weights.
+    """
 
-    Args: all passed through initialization in main.
-
-    '''
-    
+    # load data
     pipe.init_dataloader()
+    
+    # setup info for loading the model
     device = "cpu" if model_arch == "CKAN" else DEVICE
-    #pick the correct file for hyperparams
-    # C:\Users\atrip\Classes\ECS-174-Project\model-weights\checkpt_CNN
-    file_path = os.path.join(WEIGHTSDIR, model_descr)
+    
+    # load & interpret
     loaded_model = loader(model_descr, model_class)
     loaded_model = loaded_model.to(device)
-    loaded_model.interpret(pipe.test_loader)
+    loaded_model.interpret(model_descr, device=device)
 
 # Testing
 def main():

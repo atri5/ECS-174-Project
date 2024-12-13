@@ -323,7 +323,7 @@ def loader(path: Path | str, model_class: Any) -> nn.Module:
     print(f"Saved model to {weight_export_dir / path}, hyperparams to {hp_export_dir / path}")
     return model 
 
-def cnn_interpreter(model: nn.Module, train_loader: Any, target_layer: Any=None, ckan_instance = False, **kwargs) -> None:
+def cnn_interpreter(model: nn.Module, train_loader: Any, target_layer: Any=None, **kwargs) -> None:
     """Interprets CNN-based architectures via Grad-Cam.
 
     Args:
@@ -335,9 +335,7 @@ def cnn_interpreter(model: nn.Module, train_loader: Any, target_layer: Any=None,
     """
 
     # ensure not autograd
-    device = 'cpu' if ckan_instance else kwargs.get("device", DEVICE)
-
-
+    device = kwargs.get("device", DEVICE)
     model.eval()
     
     # load in image to use
