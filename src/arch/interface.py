@@ -36,7 +36,7 @@ from src.utils.visualization import save_image
 NUM_INPUT_CHANNELS = 1
 NUM_OUTPUT_CLASSES = 3
 IMAGE_DIMS = (224, 224)
-DEVICE = "cuda" if torch.cuda.is_available() else "mps"
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 RAND_SEED = 17
 TTV_SPLIT = (0.7, 0.1, 0.2)
 
@@ -335,6 +335,11 @@ def cnn_interpreter(model: nn.Module, train_loader: Any, target_layer: Any=None,
 
     # ensure not autograd
     device = kwargs.get("device", DEVICE)
+
+    #check for CKAN
+    if (type(model == 'src.arch.kan.CKAN')):
+        device = "cpu"
+    
     model.eval()
     
     # load in image to use
