@@ -238,7 +238,7 @@ def test_tabular():
     rows = []
 
     #lambda to check if simpler name exists
-    model_search = lambda name, model_name: model_name in name
+    model_search = lambda name, model_name: model_name in name or model_name.lower() in name
 
 
     for model_name, metrics in test_data.items():
@@ -246,9 +246,7 @@ def test_tabular():
         label_name = None 
 
         for model in model_types:
-
             if model_search(model_name, model) and model_search(model_name, "final"):  # final model check
-                
                 #name simplification
                 if model == "modified_CNN":
                     label_name = "MCNN"
@@ -310,9 +308,10 @@ def train_time_plot():
     rename_training_times = {}
 
     for model_name, metrics in training_times.items():
-        model_types = ["ResNet", "modified_CNN", "CNN", "KAN", "VIT", ]
+        model_types = ["ResNet", "modified_CNN", "CNN", "KAN", "VIT"]
         for model in model_types:
             if model_search(model_name, model):  # check if model type exists
+                
                 if model == "modified_CNN":
                     model = "MCNN"
                 # if model type in dict, skip
@@ -349,7 +348,7 @@ if __name__ == "__main__":
     #main pipeline, run once all model training is complete. 
 
     # --- Generate Time Graphs --- #
-    train_time_plot()
+    # train_time_plot()
 
     # --- Generate Table for Test Metrics --- #
     test_tabular()
