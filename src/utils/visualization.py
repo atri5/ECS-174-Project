@@ -242,32 +242,44 @@ def test_tabular():
 
 
     for model_name, metrics in test_data.items():
-        model_types = ["ResNet", "CNN", "KAN", "VIT"]
-        for model in model_types:
-            if(model_search(model_name, model)): #if model type exists, simplify name for better usage in data table
-                model_name = model
-        
-        row = {
-            "Model": model_name,
-            "Accuracy": round(metrics.get("acc", None),3),
-            "Loss": round(metrics.get("loss", None),3),
-            "Duration": round(metrics.get("duration", None),3)
-        }
+        model_types = ["ResNet", "modified_CNN", "CNN", "KAN", "VIT"]
+        label_name = None 
 
-        rows.append(row)
-    df = pd.DataFrame(rows)
+        for model in model_types:
+
+            if model_search(model_name, model) and model_search(model_name, "final"):  # final model check
+                
+                #name simplification
+                if model == "modified_CNN":
+                    label_name = "MCNN"
+                else:
+                    label_name = model
+                
+                label = True
+                break 
+        if label_name:  
+            row = {
+                "Model": label_name,
+                "Accuracy": round(metrics.get("acc", None), 3),
+                "Loss": round(metrics.get("loss", None), 3),
+                "Duration": round(metrics.get("duration", None), 3)
+            }
+            rows.append(row)
+
+    df = pd.DataFrame(rows)  # Convert rows to DataFrame
     print("completed dataframe")
     print(df)
-    #render table as png
-    fig, ax = plt.subplots(figsize=(8, 4))
-    ax.axis('tight')  
-    ax.axis('off')    
-    ax.table(cellText=df.values, colLabels=df.columns, cellLoc='center', loc='center')
 
     #save
-    figure_save = os.path.join(SAVEDIR, "test_metrics_table.png")
-    plt.savefig(figure_save)
-    print(f"saved data-table to {figure_save}.")
+    latex_table = df.to_latex(index=False) 
+    print(latex_table)
+
+    #save
+    figure_save = os.path.join(SAVEDIR, "test_metrics_table.tex")
+    with open(figure_save, "w") as file:
+        file.write(latex_table)
+
+    print(f"LaTeX table saved to {figure_save}")
     return df #if needed 
 
 def train_time_plot():
@@ -300,10 +312,8 @@ def train_time_plot():
     for model_name, metrics in training_times.items():
         model_types = ["ResNet", "modified_CNN", "CNN", "KAN", "VIT", ]
         for model in model_types:
-            print(f'search {model_name}, {model}')
             if model_search(model_name, model):  # check if model type exists
                 if model == "modified_CNN":
-                    print("yes")
                     model = "MCNN"
                 # if model type in dict, skip
                 if model not in rename_training_times:
@@ -343,7 +353,7 @@ if __name__ == "__main__":
     train_time_plot()
 
     # --- Generate Table for Test Metrics --- #
-    # test_tabular()
+    test_tabular()
     
     
     
