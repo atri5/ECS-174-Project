@@ -318,8 +318,7 @@ def train_time_plot():
                 # if model type in dict, skip
                 if model not in rename_training_times:
                     rename_training_times[model] = metrics  # simplify name
-                break  # Exit the loop once a match is found
-    print(rename_training_times.keys())
+                break  
     # compute average times
     for key in rename_training_times.keys():
         epoch_time = sum(rename_training_times[key]) / len(rename_training_times[key])
