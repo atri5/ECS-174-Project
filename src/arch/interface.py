@@ -1,7 +1,9 @@
 """
 @brief Interface for the model architectures; all models used should follow the 
     same structure to ensure compatability.
-@author Arjun Ashok (arjun3.ashok@gmail.com)
+@author Arjun Ashok (arjun3.ashok@gmail.com),
+        Ayush Tripathi(atripathi7783@gmail.com)
+
 """
 
 
@@ -24,6 +26,7 @@ from typing import Any
 from pathlib import Path
 from json import dump, load
 from time import time
+import os
 
 # internal modules
 from src.utils.visualization import save_image
@@ -305,16 +308,19 @@ def loader(path: Path | str, model_class: Any) -> nn.Module:
         raise FileNotFoundError(f"hyperparams directory ({hp_export_dir.absolute()}) doesn't exist")
     
     # load the hyperparams
-    with open(hp_export_dir / path, "r") as f:
+    hp_path = path + ".json"
+    with open(hp_export_dir / hp_path, "r") as f:
         hp = load(f)
         
     # load state dict
-    model = model_class.__init__(hyperparams=hp)
+    
+    model = model_class(hyperparams=hp)
     model.load_state_dict(torch.load(weight_export_dir / path, weights_only=True))
     model.eval()
 
     # conclude
     print(f"Saved model to {weight_export_dir / path}, hyperparams to {hp_export_dir / path}")
+    return model 
 
 def cnn_interpreter(model: nn.Module, train_loader: Any, target_layer: Any=None, **kwargs) -> None:
     """Interprets CNN-based architectures via Grad-Cam.
