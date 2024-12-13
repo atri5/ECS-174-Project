@@ -25,7 +25,6 @@ from src.utils.visualization import *
 
 WEIGHTSDIR = Path().cwd() / "model-weights" 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 # Framework
 class Pipeline(object):
     def __init__(self, model_class: CVModel, hyperparams: dict[str, Any], 
@@ -136,7 +135,23 @@ class Pipeline(object):
         
         # TODO @Ayush: visualizations
         
-        
+
+def interpret_loaded_model(pipe: Pipeline,  model_descr, model_class, model_arch):
+    '''
+    Purpose: Loads and interprets a complete model.
+
+    Args: all passed through initialization in main.
+
+    '''
+    
+    pipe.init_dataloader()
+    device = "cpu" if model_arch == "CKAN" else DEVICE
+    #pick the correct file for hyperparams
+    # C:\Users\atrip\Classes\ECS-174-Project\model-weights\checkpt_CNN
+    file_path = os.path.join(WEIGHTSDIR, model_descr)
+    loaded_model = loader(model_descr, model_class)
+    loaded_model = loaded_model.to(device)
+    loaded_model.interpret(pipe.test_loader)
 
 # Testing
 def main():
@@ -148,7 +163,7 @@ def main():
     # initialize model
     hp = load_hyperparams()
     hp["nepochs"] = 1
-    model_arch = "ResNet"
+    model_arch = "CKAN"
     run_type = "trial"
     
     # model descriptions
@@ -160,11 +175,12 @@ def main():
         "CKAN": (CKAN, "conv_KAN")
     }
     model_class, model_descr = model_info[model_arch]
-    
+    model_descr = f"{run_type}_{model_descr}"
+
     # pipeline
     pipe = Pipeline(
         model_class=model_class, hyperparams=hp, 
-        model_descr=f"{run_type}_{model_descr}", image_dir=img_dir,
+        model_descr=model_descr, image_dir=img_dir,
         metadata_dir=data_dir
     )
     # res = pipe.pipeline()
@@ -174,15 +190,7 @@ def main():
     #     pipe.model.interpret(pipe.test_loader)
 
     #Use if loading model:
-    pipe.init_dataloader()
-
-    #pick the correct file for hyperparams
-    weights_name = "final_simple_ResNet"
-    # C:\Users\atrip\Classes\ECS-174-Project\model-weights\checkpt_CNN
-    file_path = os.path.join(WEIGHTSDIR, weights_name)
-    loaded_model = loader(weights_name, model_class)
-    loaded_model = loaded_model.to(DEVICE)
-    loaded_model.interpret(pipe.test_loader)
+    interpret_loaded_model(pipe, model_descr, model_class, model_arch)
 
 if __name__ == "__main__":
     main()
