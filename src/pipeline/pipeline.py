@@ -155,6 +155,10 @@ def interpret_loaded_model(pipe: Pipeline,  model_descr, model_class, model_arch
 
 # Testing
 def main():
+
+    #if preloaded, set to True
+    preloaded = False
+
     # collect directories
     data_dir = r"C:\Users\atrip\Classes\ECS-174-Project\src\dataset\rsna-2024-lumbar-spine-degenerative-classification"
     img_dir = r"C:\Users\atrip\Classes\ECS-174-Project\src\dataset\rsna-2024-lumbar-spine-degenerative-classification\train_images"
@@ -183,14 +187,13 @@ def main():
         model_descr=model_descr, image_dir=img_dir,
         metadata_dir=data_dir
     )
-    # res = pipe.pipeline()
-    
-    # interpreter
-    # if model_arch == "CNN":
-    #     pipe.model.interpret(pipe.test_loader)
 
-    #Use if loading model:
-    interpret_loaded_model(pipe, model_descr, model_class, model_arch)
+    # model interpretation
+    if not preloaded:
+        res = pipe.pipeline()
+        pipe.model.interpret(pipe.test_loader)
+    else:
+        interpret_loaded_model(pipe, model_descr, model_class, model_arch)
 
 if __name__ == "__main__":
     main()
