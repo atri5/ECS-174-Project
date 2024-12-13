@@ -1,0 +1,8 @@
+{
+    "nepochs": "30",
+    "loss": "<function <lambda> at 0x000001FB569A19E0>",
+    "loss_kwargs": "{}",
+    "optimizer": "<function <lambda> at 0x000001FB56CA1620>",
+    "optimizer_kwargs": "{}",
+    "nearly_stop": "5"
+}
