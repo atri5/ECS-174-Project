@@ -139,14 +139,14 @@ def interpret_loaded_model(pipe: Pipeline, model_class):
     """Wrapper for interpreting a model with saved weights.
     """
     
+    # load data
     pipe.init_dataloader()
+    
+    # setup info for loading the model
     model_arch = f"final_{model_class.__class__.__name__}"
     device = "cpu" if model_arch == "CKAN" else DEVICE
     
-    print(device)
-    #pick the correct file for hyperparams
-    # C:\Users\atrip\Classes\ECS-174-Project\model-weights\checkpt_CNN
-    
+    # load & interpret
     loaded_model = loader(pipe.model_descr, model_class)
     loaded_model = loaded_model.to(device)
     loaded_model.interpret(pipe.test_loader, device=device)

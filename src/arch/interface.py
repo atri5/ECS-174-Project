@@ -371,16 +371,18 @@ def cnn_interpreter(model: nn.Module, train_loader: Any, target_layer: Any=None,
     target_class = output.argmax(dim=1).item()
     mask, heatmap = gradcam(img, class_idx=target_class)
     image = visualize_cam(mask, img.squeeze(0).squeeze(0))[1]
+    print(heatmap)
 
     # generate & save image
+    original = img.squeeze(0).permute(1, 2, 0).cpu().numpy()
+    norm_heatmap = image.permute(1, 2, 0).cpu().numpy()
     overlay_np = np.hstack((
-        cv2.cvtColor(img.view(1, 224, 224).permute(1, 2, 0).cpu().numpy(), cv2.COLOR_GRAY2RGB),
-        image.permute(1, 2, 0).cpu().numpy()
+        original.squeeze(2),
+        cv2.cvtColor(norm_heatmap, cv2.COLOR_RGB2GRAY)
     ))
     overlay_np = (overlay_np * 255).astype("uint8")
-    warnings.resetwarnings()
-    
     save_image(overlay_np, f"{model.__class__.__name__}_interpretation")
+    warnings.resetwarnings()
     
 
 # --- Interface --- #
