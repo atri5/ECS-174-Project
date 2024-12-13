@@ -8,4 +8,3 @@ Deep-Kan
 pydicom
 pytorch-gradcam
 opencv-python
-plotly
