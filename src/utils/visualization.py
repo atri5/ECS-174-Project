@@ -15,6 +15,7 @@ import seaborn as sns
 import cv2
 from pathlib import Path
 import json
+import plotly.graph_objects as go
 
 
 SAVEDIR = Path().cwd() / "report" / "visuals"
@@ -138,7 +139,66 @@ def plot_train_metrics(metrics: dict, desc: str):
     plt.grid(True)
     plt.savefig(SAVEDIR / f"{desc}_train_accuracy.png", dpi=400)
 
+def test_tabular():
+    '''Purpose:
+    grabs jsons of all relevant testing data of models, compiles and returns table. Stores in ./report/tables.
+    
+    Args: None
+    '''
 
+
+    test_data = {}
+    for filename in os.listdir(JSONDIR):
+        if filename.endswith(".json"):
+            file_path = os.path.join(JSONDIR, filename)
+            with open(file_path, "r") as file:
+                try:
+                    data = json.load(file)
+                    if "test" in data:
+                        model_name = filename.replace(".json", "")
+                        test_data[model_name] = data["test"]
+                    else:
+                        print(f"'test' key missing in: {file_path}")
+                        
+                except json.JSONDecodeError:
+                    print(f"Error decoding JSON in file: {filename}")
+    #logic for building dataframe
+    rows = []
+
+    #lambda to check if simpler name exists
+    model_search = lambda name, model_name: model_name in name
+
+
+    for model_name, metrics in test_data.items():
+        model_types = ["ResNet", "CNN", "KAN", "VIT"]
+        for model in model_types:
+            if(model_search(model_name, model)): #if model type exists, simplify name for better usage in data table
+                model_name = model
+        
+        row = {
+            "Model": model_name,
+            "Accuracy": metrics.get("acc", None),
+            "Loss": metrics.get("loss", None),
+            "Duration": metrics.get("duration", None)
+        }
+
+        rows.append(row)
+    df = pd.DataFrame(rows)
+    print("completed dataframe")
+    print(df)
+    #render table as png
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.axis('tight')  
+    ax.axis('off')    
+    ax.table(cellText=df.values, colLabels=df.columns, cellLoc='center', loc='center')
+
+    #save
+    figure_save = os.path.join(SAVEDIR, "test_metrics_table.png")
+    plt.savefig(figure_save)
+    print(f"saved data-table to {figure_save}.")
+    return df #if needed 
+
+                
 
 def train_time_plot():
     '''
@@ -169,7 +229,7 @@ def train_time_plot():
         epochs = range(1, len(epoch_times) + 1)  
         plt.plot(epochs, epoch_times, label=key) 
         
-    # Add plot details
+    #formulate plot
     plt.xlabel("Epoch")
     plt.ylabel("Training Time (s)")
     plt.title("Training Time Per Epoch for Models")
@@ -177,9 +237,10 @@ def train_time_plot():
     plt.grid(True)
     plt.tight_layout()
 
-    # Save or show the plot
-    plt.savefig("./report/visuals/training_times_per_epoch.png")  # Save to ./report/visuals
-    plt.show()
+    #save plot to path
+    save_image = os.path.join(SAVEDIR, "training_times_per_epoch.png")
+    plt.savefig(save_image)  # Save to ./report/visuals
+    print(f"Training time plot saved to: {save_image}")
 
 
 
@@ -188,6 +249,8 @@ if __name__ == "__main__":
 
     # --- Generate Time Graphs --- #
     train_time_plot()
+
+    test_tabular()
     
     
     
