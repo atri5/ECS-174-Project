@@ -301,13 +301,13 @@ def train_time_plot():
         model_types = ["ResNet", "modified_CNN", "CNN", "KAN", "VIT", ]
         for model in model_types:
             print(f'search {model_name}, {model}')
-            if model_search(model_name, model):  # Check if the model type exists
+            if model_search(model_name, model):  # check if model type exists
                 if model == "modified_CNN":
                     print("yes")
                     model = "MCNN"
-                # If the model type is already in the dictionary, skip adding again
+                # if model type in dict, skip
                 if model not in rename_training_times:
-                    rename_training_times[model] = metrics  # Use simplified name
+                    rename_training_times[model] = metrics  # simplify name
                 break  # Exit the loop once a match is found
     print(rename_training_times.keys())
     # compute average times
