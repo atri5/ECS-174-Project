@@ -20,3 +20,13 @@ pip install -r requirements.txt
 python3 -m src.pipeline.pipeline
 ```
 
+### Included Modules
+We have modules for the architecture `arch`, visualizations and metrics `utils`, 
+and the pipeline `pipeline`. Weights and hyperparameters are automatically 
+cached for safe-keeping.
+
+## Report
+All materials (slides, report raw files, visuals, etc.) are all included in the
+`report/` directory. The final report pdf is available in the repo directory as
+`report.pdf`.
+
