@@ -6,26 +6,31 @@
 \usepackage{algorithmic}
 \usepackage{graphicx}
 \usepackage{textcomp}
+\usepackage{hyperref}
 \usepackage{xcolor}
+\usepackage{float}
+\usepackage{booktabs, tabularx}
+\usepackage[referable]{threeparttablex}
+\usepackage{stfloats}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
 
 \title{Deep Learning for Lumbar Spine Classification}
 
-\author{\IEEEauthorblockN{Arjun Ashok}
+\author{\IEEEauthorblockN{\textbf{Arjun Ashok}*}
 \IEEEauthorblockA{\textit{Department of Computer Science, Statistics} \\
 \textit{University of California, Davis}\\
 Davis, USA\\
 arjun3.ashok@gmail.com}
 \and
 \IEEEauthorblockN{Zhian Li}
-\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\IEEEauthorblockA{\textit{Department of Biological and Agricultural Engineering} \\
 \textit{University of California, Davis}\\
 Davis, USA \\
-email address or ORCID}
+lionellee0126@gmail.com}
 \and
-\IEEEauthorblockN{Ayush Tripathi}
+\IEEEauthorblockN{\centerline{Ayush Tripathi}}
 \IEEEauthorblockA{\textit{Department of Computer Science} \\
 \textit{University of California, Davis}\\
 Davis, USA \\
@@ -33,6 +38,8 @@ atripathi7783@gmail.com}
 }
 
 \maketitle
+
+\footnote{* corresponding author}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -99,24 +106,24 @@ Prior to training, we briefly pre-process the MRI data across all models to impr
     \item \textbf{Normalize}: we normalize all images such that every channel (just one in this case since MRI images are grayscale) is distributed with mean pixel brightness of 0.5 and standard deviation of 0.5. Not only does this aid with consistency across each batch, but we get the additional benefit of a model less sensitive to learning rate since all inputs will adhere to a set range of values. The observed downstream impact is a faster, stabler convergence across all architectures during empirical testing.
 \end{enumerate}
 
-Respectively, we leverage $\approx 70\%$, $\approx 10\%$, $\approx 20\%$ of the data for training, validation, and testing.
+Respectively, we allocate approximately 70\%, 10\%, and 20\% of the data for training, validation, and testing.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Model Architectures}
 \subsection{Convolutional Neural Network (CNN)} \label{sec:CNN}
-Convolutional Neural Networks have become the de-facto architecture employed with image processing tasks in recent years. Their flexibility in learning filters specific for a given task rather than need pre-built/manually specified convolutional kernels allows them to outperform traditional MLPs quite effectively.
+Convolutional Neural Networks have become the de-facto architecture employed with image processing tasks in recent years. Their flexibility in learning task-specific filters rather than needing pre-built/manually specified convolutional kernels allows them to outperform traditional MLPs quite effectively.
 
 Our deployed architecture makes use of two fundamental blocks:
 \begin{enumerate}
     \item \textbf{Convolutional Process}: each convolutional process
-    consists of a 2D-convolutional layer ($7 \times 7$ kernel), a ReLU activation, and a 2D-Max-Pooling ($2 \times 2$ kernel). We stack 3 convolutional processes to conduct sufficient feature extraction (with 8, 16, then 32 channel outputs respectively).
+    consists of a 2D-convolutional layer ($7 \times 7$ kernel), a ReLU activation, and 2D-Max-Pooling ($2 \times 2$ kernel). We stack 3 convolutional processes to conduct sufficient feature extraction with 8, 16, then 32 channel outputs respectively.
     
     \item \textbf{Multi-Layer Perceptron (MLP)}: we feed the last convolutional process' outputs into a traditional multi-layer perceptron head of 3 fully-connected, linear layers to perform the classification. Recall our output layer will have 3 nodes, one for each severity.
 \end{enumerate}
 
 \subsection{Modified Convolutional Neural Network (MCNN)}
-The most recent trend in deep learning for computer vision is attention-based networks, i.e. vision transformers. To continue maintaing its relevancy, one group of researchers have augmented ConvNet to produce ConvNeXt: a CNN-based architecture that lends some architectural decisions from attention-based models \cite{convnet}. Due to the substantially different training approach they utilized, we opted to use a subset of their augmentations on ConvNet to apply on our own CNN \ref{sec:CNN}:
+The most recent trend in deep learning for computer vision is attention-based networks, i.e. vision transformers. To continue maintaing its relevancy, one group of researchers have augmented ConvNet to produce ConvNeXt: a CNN-based architecture that lends some architectural decisions from attention-based models \cite{convnet}. Due to the substantially different training approach they utilized, we opted to use a subset of their augmentations on ConvNet to apply on our own CNN (\ref{sec:CNN}):
 \begin{itemize}
     \item \textbf{Activation Functions}: rather than applying ReLU after each operation, we utilize a single GeLU operation in every convolutional process \cite{convnet}.
     
@@ -126,16 +133,24 @@ The most recent trend in deep learning for computer vision is attention-based ne
 Though these changes appear small, their downstream impact has proven rewarding in prior work and may encourage similar borrowing in future work \cite{convnet}.
 
 \subsection{Residual Neural Network (ResNet)}
-ResNet was first developed by Microsoft Research (MSR) with the goal of deepening neural architectures \cite{resnet}. Previously, models with deep hidden layers would suffer from the vanishing gradient problem, i.e. gradients would start to approach zero as backpropagation moved away from the output layers. To remedy this, ResNet relies on learning a function $F(x)$ for the input $x$ such that $H(x) = F(x) + x$. More succinctly, the model learns to augment the input over each residual block rather than transforming the whole input as in other architectures. Thus, each residual block will have the output of the previous residual block added to its own output \cite{resnet}.
+ResNet was first developed by Microsoft Research (MSR) with the goal of deepening neural architectures \cite{resnet}. Previously, models with deep hidden layers would suffer from the vanishing gradient problem--gradients would start to approach zero as backpropagation moved away from the output layers, thereby rendering some layers relatively untrainable. To remedy this, ResNet relies on learning a function $F(x)$ for the input $x$ such that $H(x) = F(x) + x$. More broadly, the model learns to augment the input over each residual block rather than transforming the whole input as in more basic convolutional architectures. Thus, each residual block has the output of the previous residual block added to its own output \cite{resnet}.
 
 With this mechanism, ResNet architectures can be much deeper while retaining trainability. In our implementation of ResNet, we leverage the ResNet-18 architecture (18 layer CNN) without pre-training.
 
 \subsection{Vision Transformer (VIT)}
 Transformers were initially developed by Google Brain for processing and generating large sequences of data, particularly in text-related tasks such as translation \cite{transformer}. Recent work, however, has explored the use of transformers in vision settings--unsurprising since convolution has similarly proved useful for text-related tasks \cite{VIT} \cite{transformer}. The vision transformer has proved to be extremely effective at learning context within images, matching the performance of state-of-the-art models at a fraction of the compute \cite{VIT}.
 
-Briefly, vision transformers work by dividing an image into a grid of smaller cells, where each cell can be thought of as a token. As with text-related tasks, attention blocks are highly effective at making associations between tokens, allowing the vision transformer to leverage broader context across all grid cells. A convolutional network, in comparison, inherently relies on the surrounding region of a pixel to extract information, thereby prone to ignoring important context that is not spatially close-by.
+Briefly, vision transformers work by dividing an image into a grid of smaller cells, where each cell can be thought of as a token. As with text-related tasks, attention blocks are highly effective at making associations between tokens, allowing the vision transformer to leverage broader context across all grid cells. A convolutional network, in comparison, inherently relies on the surrounding region of a pixel to extract information, thereby prone to ignoring important context that is not spatially local.
 
-For our implementation of the vision transformer, we built a backbone of 
+For our implementation of the vision transformer, we built a backbone of several essential components, including patch embedding, multi-head attention, positional encoding, and a sequence of transformer encoder layers.
+\begin{enumerate} 
+    \item \textbf{Patch Embedding}: the image is divided into non-overlapping patches of size $16 \times 16$ , which are then flattened and passed through a convolutional layer to project them into an embedding space of 768 dimensions. This process effectively transforms the image into a sequence of tokens.
+    \item \textbf{Positional Encoding}: since transformers lack a built-in understanding of spatial relationships, a learnable positional encoding is added to each token to retain information about the relative positions of patches in the image.
+
+    \item \textbf{Transformer Encoder Layers}: these consist of multiple encoder layers, each containing a multi-head self-attention mechanism followed by a feed-forward neural network. %The attention mechanism allows the model to capture long-range dependencies and contextual relationships between image patches. The encoder layers help refine the representation of the image in the token space.
+
+    \item \textbf{Classification Head}: After passing through all transformer encoder layers, the output corresponding to a special class token (CLS token) is extracted. This token's representation is then passed through a fully connected layer to output class logits for classification.
+\end{enumerate}
 
 
 \subsection{Convolutional Kolmogorov-Arnold Network (CKAN)}
@@ -143,13 +158,13 @@ Kolmogorov-Arnold Networks are an alternative basis to the perceptron-learning n
 
 Briefly, deep learning is based on approximations--the objective of neural networks is to learn a manifold of some kind, i.e. approximate a function \cite{mlp_approx_thm}. The Universal Approximation Theorem enabled the Multi-Layer Perceptron architecture by roughly proving that feed-forward networks with non-polynomial activations can map between two Euclidean spaces (i.e. approximate any function) \cite{mlp_approx_thm}. Note here that this doesn't explicitly prove a method of convergence (global minimum), although backpropagation tends to estimate parameters well enough for practical use (local minimum) \cite{mlp_approx_thm}.
 
-However, an alternative basis has recently been explored with the Kolmogorov-Arnold Representation Theorem \cite{kan}. The theorem roughly states that any multivariate, continuous function can be decomposed into a \textit{finite} sum of single-variable, continuous functions \cite{kan_approx_thm}. The most promising application of this basis has been in learning activation functions as splines rather than a set function \cite{kan}. In addition to enabling a smaller network to emulate the performance of a larger MLP, this approach allows for increased interpretability by way of these learned splines \cite{kan}. This is analagous to a learned kernel in CNNs for better performance and interpretation.
+However, an alternative basis has recently been explored with the Kolmogorov-Arnold Representation Theorem \cite{kan}. The theorem roughly states that any multivariate, continuous function can be decomposed into a \textit{finite} sum of single-variable, continuous functions \cite{kan_approx_thm}. The most promising application of this basis has been in learning activation functions as splines rather than a set function (e.g. ReLU) \cite{kan}. In addition to enabling a smaller network to emulate the performance of a larger MLP, this approach allows for increased interpretability by way of these learned splines \cite{kan}. This is analagous to a learned kernel in CNNs for better performance and interpretation.
 
-Due to its relatively new deployment, we opted to simply replace some of MLP layers from our MCNN model to these spline linear layers. Thus, our best point of comparison for KAN spline layers versus traditional MLP layers will be the MCNN.
+Due to its relatively new deployment, we opted to simply replace some of the linear layers from our MCNN model classification head to these spline linear layers, retaining the convolutional backbone as before. Thus, our best point of comparison for KAN spline layers versus traditional MLP layers will be the MCNN.
 
 
 \subsection{Model Interpretation}
-For convolutional architectures (e.g. CNN, MCNN, CKAN, ResNet), we can leverage a popular interpretation technique Grad-Cam to interpret the model. Grad-Cam works by taking the gradients (i.e. back-propagating) from the target class' node in the output layer to the final convolutional layer to highlight important parts of the image for triggering the output activation \cite{gradcam}.
+For convolutional architectures (e.g. CNN, MCNN, CKAN, ResNet), we can leverage a popular interpretation technique Grad-Cam to interpret the model. Briefly, Grad-Cam works by taking the gradients (i.e. back-propagating) from the target class' node in the output layer back to the final convolutional layer, highlighting spatially relevant pixels of the image for triggering the output activation \cite{gradcam}.
 
 
 \subsection{Future Explorations}
@@ -157,7 +172,7 @@ To ensure the cleanest comparison across architectures (and deal with time and c
 \begin{itemize}
     \item \textbf{Data Augmentation}: given the controlled environment of an MRI machine, most augmentations would likely not apply to our context without causing more harm than good for model training. However, some techniques such as jitter, horizontal flips, and slight blurring may help the model in deployment since patients may get restless during the long imaging process of an MRI and/or be place in either orientation.
 
-    \item \textbf{Pre-Training}: across all model, pre-training via a related task (e.g. X-ray imaging diagnosis) or even a generic task (e.g. ImageNet) may benefit the model's downstream performance. Exploring certain pre-text (pseudo) tasks may also be a worthwhile path to explore.
+    \item \textbf{Pre-Training}: across all model, pre-training via a related task (e.g. X-ray imaging diagnosis) or even a generic task (e.g. ImageNet) may benefit the model's downstream performance. Exploring certain pre-text (pseudo) tasks may also be a worthwhile branch for future work.
 
     \item \textbf{Region Proposal}: although RPNs have proven highly effective in reducing overhead computation and improving bounding box regression, their inclusion in our models seem to distract from the simpler classification task. That being said, if future work aimed to provide doctor's with a region of interest to inspect (i.e. a bounding box output), an RPN would certainly warrant further consideration.
 
@@ -168,36 +183,169 @@ To ensure the cleanest comparison across architectures (and deal with time and c
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Results}
 \subsection{Computational Efficiency}
-- how fast was each model to train
-- how fast is each model in prediction
-- table comparing models
-- convergence graphs go here
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{visuals/training_times_per_epoch.png}
+    \caption{A Comparison of training times per epoch across studied model architectures. Note that for all trials we use \ref{app:machine_1} (RTX 4080 Super), except for the CKAN which can only run on CPU.}
+    \label{fig:training-times}
+\end{figure}
 
+Across all architectures, we find that training times are roughly similar, with the notable exception being the vision transformer model roughly $50\%$ longer per epoch \ref{fig:training-times}. This discrepancy can be attributed to the steeper computational cost required for the model compared to the others in the study given its larger architecture.
+
+% %% CENTERED VERSION %%
+% \begin{table*}[b]
+%     \caption{Model Performance by Architecture}
+%     \centering
+%     \begin{tabular}{lrrr}
+%         \toprule
+%         Architecture & Accuracy & Weighted Log Loss & Inference Time (ms) \\
+%         \midrule
+%         CNN & 0.902 & 0.348 & 5.692 \\
+%         MCNN & 0.895 & 0.359 & 5.105 \\
+%         ResNet & 0.895 & 0.442 & 4.179 \\
+%         VIT & & & \\
+%         KAN & 0.902 & 0.342 & 5.034 \\
+%         \bottomrule
+%     \end{tabular}
+%     \label{tab:perf}
+% \end{table*}
+
+%% UN_CENTERED VERSION %%
 \subsection{Performance}
-- table comparing how accurate each model is
-- show example of misclassified images, correctly classified images
+Across all model architectures implemented with our training regime, we see a similar reported accuracy \ref{tab:perf}. The differentiator comes when inspecting the loss, i.e. how well does each model predict the likelihood of each severity between each case. The CKAN and CNN stand out as the best models by a margin of $\geq 0.7\%+$ accuracy and $\geq 0.017$ weighted log loss, with MCNN close behind.
+
+Surprisingly, the VIT failed to outperform even the more basic ResNet; comparing the $\mathcal{WLL}$ of each, we can conclude that the ResNet tended to be confidently wrong while the VIT was more uncertain during incorrect predictions--thus, a lower accuracy but also lower loss for the VIT compared to the ResNet.
+
+\begin{table}[h]
+    \caption{
+        Performance across Model Architectures
+    }
+    \centering
+    \begin{tabular}[h]{lrrr}
+        \toprule
+        Architecture & Accuracy & \begin{tabular}{@{}c@{}}Weighted \\ Log Loss \\ \end{tabular} & \begin{tabular}{@{}c@{}}Inference \\ Time (ms) \\ \end{tabular}
+        \\ \midrule
+        CNN & \textbf{90.2}\% & 0.348 & 5.692 \\
+        MCNN & 89.5\% & 0.359 & 5.105 \\
+        ResNet & 89.5\% & 0.442 & \textbf{4.179} \\
+        CKAN & \textbf{90.2}\% & \textbf{0.342} & 5.034 \\
+        VIT & 88.4\% & 0.395 & 8.596 \\
+        \bottomrule \\
+    \end{tabular}
+    \label{tab:perf}
+\end{table}
+
+We conjecture that the VIT and ResNet's lower than expected performance can be attributed to their larger architectures with a relatively smaller dataset. In future work, pre-training either model (especially ResNet) may yield much better convergence and overall performance.
+
+Although not as essential in the context of medical diagnosis, the inference time of each model speaks to its potential for real-time deployment. A system which can make on-the-fly predictions during the imaging process presents great value for radiologists during time-critical work. All models meet the criteria for real-time deployment with most Magnetic Resonance Imaging machines taking at most 1 frame every $\approx 40$ms--a framerate all architectures we've employed can exceed.
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=1\linewidth]{visuals/dataset_sample_no_preds.png}
+%     \caption{Dataset Sample with No Predictions}
+%     \label{fig:sample-preds}
+% \end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{visuals/dataset_sample_preds.png}
+    \caption{Dataset Sample with CKAN Predictions}
+    \label{fig:sample-preds}
+\end{figure}
+
+
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=1\linewidth]{visuals/final_KAN_train_accuracy.png}
+%     \caption{Enter Caption}
+%     \label{fig:enter-label}
+% \end{figure}
+
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=1\linewidth]{visuals/final_simple_ResNet18_train_accuracy.png}
+%     \caption{Enter Caption}
+%     \label{fig:enter-label}
+% \end{figure}
+
+
 
 \subsection{Model Interpretation}
-- what can each architecture teach us about the diagnosing process?
+With our CNN-backbone models (CNN, MCNN, CKAN, ResNet), we applied Grad-Cam to visualize what powered the model's ultimate decision by projecting areas of high activation onto the original image. Such areas of high activation can be though of as a heatmap of importance, thus enabling a diagnostician to look for regions of interest. In the CKAN Grad-Cam \ref{fig:interpret_ckan}, for example, notice how the activation is concentrated around the fluid build-up in the spine, thus indicating a more severe lumbar diagnosis.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\linewidth]{visuals/CKAN_interpretation.png}
+    \caption{CKAN Grad-Cam visualization of the last convolutional layer as heatmap of importance. The darker regions indicate elevated importance.
+    }
+    \label{fig:interpret_ckan}
+\end{figure}
+
+In comparison, the CNN Grad-Cam \ref{fig:interpret_cnn} shows a much broader range of activations across the image, indicating a larger area of focus. Given our lack of expertise in diagnosing lumbar conditions, we can either interpret this larger region of interest as a more weighted, thorough decision. Equally likely, we can interpret the larger region as a model that hasn't learned the underlying patterns well enough to be specific. Given the downstream performance, we lean closer to the latter conclusion, although the difference is too marginal to conclude anything definitively.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\linewidth]{visuals/CNN_interpretation.png}
+    \caption{CNN Grad-Cam visualization of the last convolutional layer as heatmap of importance. The darker regions indicate elevated importance.
+    }
+    \label{fig:interpret_cnn}
+\end{figure}
+
+ResNet's Grad-Cam \ref{fig:interpret_resnet} showcases a reason for its disappointing performance--mistakenly, it highlights the front of the abdomen as important in its final judgment of the output. We conjecture that it (a) hasn't yet learned to ignore it, i.e. more data and more epochs could help in future work, or (b) it has learned that posture of the abdomen could indicate severity. Again, lack of background limits our ability to conclude anything definitively.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\linewidth]{visuals/ResNet_interpretation.png}
+    \caption{ResNet Grad-Cam visualization of the last convolutional layer as heatmap of importance. The darker regions indicate more importance.
+    }
+    \label{fig:interpret_resnet}
+\end{figure}
+
+We briefly mention MCNN's Grad-Cam \ref{fig:interpret_mcnn} to point out its similarity to the CKAN's interpretation. It seems, however, that the spline linear layers do a better job of selecting out the regions of interest to care about.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\linewidth]{visuals/MCNN_interpretation.png}
+    \caption{MCNN Grad-Cam visualization of the last convolutional layer as heatmap of importance. The darker regions indicate more importance.
+    }
+    \label{fig:interpret_mcnn}
+\end{figure}
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion}
-- how did we end up comparing to the models we wanted to outperform?
-- any lessons learned?
-- future goals / building on this research
-- threats to validity
+In this paper, we've explored how baseline vision models (e.g. classic CNN), state-of-the-art vision models (ResNet, Vision Transformer), and novel neural network formulations (Kolmogorov-Arnold Networks) compare in the context of diagnosing the severity of lumbar conditions via MRI scans. In comparison to prior work, we exceeded the best result of $\mathcal{WLL} = 0.36$ with three alternative architectures (CKAN, CNN, MCNN) coupled with an optimized training, inferencing, and interpretation pipeline for real-time deployment.
+
+Our comparison of across popular approaches of deep learning for computer vision reveals a few key lessons:
+\begin{enumerate}
+    \item \textbf{KAN}: our results help establish the real-world efficacy of Kolmogorov-Arnold splines for replacing the role of activation functions in traditional multi-layer perceptrons.
+
+    \item \textbf{Data Intensity}: larger models like ResNet and VIT rely on large amounts of data to outperform competing architectures. In this application, the low amount of labeled data indicates (a) a need to pre-train models on pseudo tasks and (b) that smaller, more basic architectures are better suited.
+
+    \item \textbf{Interpretability \& Inference}: however accurate a model is, in the context of medical diagnosis it is essential to remain interpretable to the diagnosticians. By creating a heatmap mask of importance, the smaller CNN-backbone architectures appear far more practical to real-world applications. A side benefit of high inferencing speeds also opens up more possibilities for deployment contexts (i.e. real-time inferencing).
+\end{enumerate}
+
+For future work, we encourage researchers to focus on how pre-training each backbone on related (e.g. X-Ray imaging) or unrelated (e.g. ImageNet) datasets might lead to downstream performance boosts, especially for the vision transformer (VIT) and ResNet. Similarly, we encourage pseudo-tasks on this dataset or related (e.g. X-Ray imaging) for pre-training without labels.
+
+Threats to validity primarily consist of the imbalance in labels contributing to a susceptibility of the models in real-world deployment. Although we leverage weighted log loss during training, we highlight this detail here for future work.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Authors \& Acknowledgment}
 \begin{itemize}
-    \item \textbf{Arjun Ashok}: project lead. Built core model architecture \& methods, implemented CNN/MCNN/KAN/ResNet, researched architectures, built model interpretation via GradCam. Wrote abstract, introduction, dataset, model architecture, and parts of results \& conclusion
-    \item \textbf{Zhian Li}: contributions go here
-    \item \textbf{Ayush Tripathi}: contributions go here
+    \item \textbf{Arjun Ashok}: Project lead. Built core model architecture \& methods \& pipeline, implemented CNN/MCNN/KAN/ResNet, researched architectures \& underlying papers, and built model interpretation via GradCam. Wrote abstract, introduction, dataset, model architecture, parts of results, conclusion, and appendix.
+    \item \textbf{Zhian Li}: Establish model architectures, designed and developed data loading pipeline, Implemented Vision Transformer Architecture, optimized pipeline for testing framework, trained model locally. Wrote part of dataset section, produced slides.
+    \item \textbf{Ayush Tripathi}: Established model architectures, refined interface, implemented U-Net, designed and optimized pipeline for testing framework, built visualization and metrics capabilities, procured visuals within report, trained models locally. Wrote part of results, produced slides. 
 \end{itemize}
 
 We'd also like to extend our appreciation to Professor Hamed Pirsiavash for an informative course and the TA's of ECS 174, Raymond Kang and Kossar Pourahmadi-Meibodi for their efforts in teaching.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliographystyle{plain}
+\bibliography{refs}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -205,8 +353,8 @@ We'd also like to extend our appreciation to Professor Hamed Pirsiavash for an i
 \subsection{Computation}
 All compute was done on one of two machines:
 \begin{enumerate}
-    \item Nvidia 4080 Super, AMD 9900X
-    \item Nvidia 4070 Super, AMD 9800X3D
+    \item \label{app:machine_1} Nvidia RTX 4080 Super, AMD 9900X
+    \item \label{app:machine_2} Nvidia RTX 4070 Super, AMD 9800X3D
 \end{enumerate}
 
 We leveraged a CUDA-enabled PyTorch compilation for all models except CKAN--the CKAN library we've used is unable to run on GPUs yet, so we trained purely on CPU.
@@ -236,9 +384,5 @@ All models used the same set of initial hyperparameters:
 \end{itemize}
 
 The vision transformer (VIT) has additional default parameters not mentioned here.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\bibliographystyle{plain}
-\bibliography{refs}
 
 \end{document}
