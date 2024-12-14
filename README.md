@@ -37,3 +37,6 @@ All materials (slides, report raw files, visuals, etc.) are all included in the
 `report/` directory. The final report pdf is available in the repo directory as
 `report.pdf`.
 
+The video presentation is viewable on google drive
+[here](https://drive.google.com/file/d/1mL5y67l-aK-iSct2mpXplZprdInjz4Ll/view?usp=sharing).
+
