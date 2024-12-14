@@ -1,6 +1,7 @@
 # ECS 174 Project: Deep Learning for Lumbar Classification
-@authors Arjun Ashok (arjun3.ashok@gmail.com, arjashok@ucdavis.edu), Zhian Li (zanli@ucdavis.edu, lionellee0126@gmail.com) ,
-Ayush Tripathi(atripathi7783@gmail.com, atripathi@ucdavis.edu)
+@authors Arjun Ashok (arjun3.ashok@gmail.com, arjashok@ucdavis.edu), Zhian Li
+(zanli@ucdavis.edu, lionellee0126@gmail.com), Ayush
+Tripathi(atripathi7783@gmail.com, atripathi@ucdavis.edu)
 
 > As deep learning becomes increasingly entrenched in our lives, it's no
 > surprise that research in how such models can assist medical professionals in
@@ -14,6 +15,12 @@ Ayush Tripathi(atripathi7783@gmail.com, atripathi@ucdavis.edu)
 ```
 pip install -r requirements.txt
 ```
+
+### Data
+Data is sourced from [this RSNA
+competition](https://www.kaggle.com/competitions/rsna-2024-lumbar-spine-degenerative-classification),
+and is expected to be unzipped into a directory called `data/`. This directory
+should contain `train_images/`, `test_images/`, and some CSVs from the download.
 
 ### Running the Pipeline
 ```
